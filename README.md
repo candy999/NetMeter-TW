@@ -1,5 +1,7 @@
 # Pixel Meter
 
+> **Fork notice:** This repository ([candy999/NetMeter-TW](https://github.com/candy999/NetMeter-TW)) is a fork of [Pixel-Tailor-CN/PixelMeter](https://github.com/Pixel-Tailor-CN/PixelMeter) by its original authors, distributed under the same Apache-2.0 license. The fork adds a Traditional Chinese (Taiwan) translation and Samsung One UI Live Update compatibility, and uses the separate application ID `io.github.candy999.netmeter` so it can be installed alongside the original app. Test builds are published as artifacts of the "Build APK" GitHub Actions workflow.
+
 <p align="center">
   <img src="app/src/main/ic_launcher-playstore.png" width="200" alt="Pixel Meter Logo"/>
 </p>
@@ -78,7 +80,7 @@ Detailed project documentation is available in [`docs/README.md`](docs/README.md
 
 ## Languages
 
-The app currently includes English, Simplified Chinese, Portuguese, Brazilian Portuguese and Russian resources. Translations are managed on Weblate.
+The app currently includes English, Simplified Chinese, Traditional Chinese (Taiwan), Portuguese, Brazilian Portuguese and Russian resources. Translations are managed on Weblate.
 
 [Help translate Pixel Meter](https://hosted.weblate.org/engage/pixel-meter/)
 

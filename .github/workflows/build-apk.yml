@@ -1,0 +1,116 @@
+name: Build APK
+
+# Builds an installable APK on every push so testers can download it from the run's artifacts.
+# When the SIGN_KEY_* secrets are configured, a signed release APK is produced. Otherwise a
+# debug APK is produced with a debug keystore that is kept in the Actions cache, so consecutive
+# builds share one signature and can be installed as in-place updates.
+
+on:
+  push:
+    branches:
+      - master
+      - 'claude/**'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HAS_RELEASE_SIGNING: ${{ secrets.SIGN_KEY_STORE_BASE64 != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # The full history is required to generate versionCode.
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Restore shared debug keystore
+        if: env.HAS_RELEASE_SIGNING != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: debug-keystore-v1
+
+      - name: Create debug keystore when missing
+        if: env.HAS_RELEASE_SIGNING != 'true'
+        run: |
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair -keystore ~/.android/debug.keystore \
+              -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - name: Build debug APK
+        if: env.HAS_RELEASE_SIGNING != 'true'
+        env:
+          # The signing script requires a path even though debug builds do not use it.
+          SIGN_KEY_STORE_FILE: ${{ runner.temp }}/unused-release-signing.jks
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:assembleDebug
+          mkdir -p apk-output
+          cp app/build/outputs/apk/debug/app-debug.apk \
+            "apk-output/PixelMeterTW-$(git rev-parse --short=8 HEAD)-debug.apk"
+
+      - name: Decode release keystore
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        run: echo "${{ secrets.SIGN_KEY_STORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Build release APK
+        if: env.HAS_RELEASE_SIGNING == 'true'
+        env:
+          SIGN_KEY_STORE_FILE: ${{ runner.temp }}/release.jks
+          SIGN_KEY_STORE_PASSWORD: ${{ secrets.SIGN_KEY_STORE_PASSWORD }}
+          SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
+          SIGN_KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:assembleRelease
+          mkdir -p apk-output
+          cp app/build/outputs/apk/release/app-release.apk \
+            "apk-output/PixelMeterTW-$(git rev-parse --short=8 HEAD)-release.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PixelMeterTW-apk
+          path: apk-output/*.apk
+          if-no-files-found: error
+
+      - name: Lint
+        env:
+          SIGN_KEY_STORE_FILE: ${{ runner.temp }}/unused-release-signing.jks
+        run: ./gradlew :app:lintDebug
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.*
+          if-no-files-found: ignore
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"

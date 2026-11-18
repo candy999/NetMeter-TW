@@ -4,6 +4,10 @@ plugins {
 }
 
 val packageName = "vip.mystery0.pixel.meter"
+
+// Fork identity: a separate applicationId lets this build coexist with upstream Pixel Meter.
+// The namespace stays on the upstream package to keep merges from upstream simple.
+val forkApplicationId = "io.github.candy999.netmeter"
 val gitVersionCode: Int = providers.exec {
     commandLine(
         "git",
@@ -64,7 +68,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = packageName
+        applicationId = forkApplicationId
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = gitVersionCode
