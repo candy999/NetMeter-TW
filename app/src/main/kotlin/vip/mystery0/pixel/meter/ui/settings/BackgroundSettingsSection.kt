@@ -14,6 +14,7 @@ import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.PreferenceCategory
 import me.zhanghai.compose.preference.SwitchPreference
 import vip.mystery0.pixel.meter.R
+import vip.mystery0.pixel.meter.service.SamsungCompat
 
 @Composable
 fun BackgroundSettingsSection(viewModel: SettingsViewModel) {
@@ -47,6 +48,19 @@ fun BackgroundSettingsSection(viewModel: SettingsViewModel) {
         title = { Text(stringResource(R.string.settings_hide_from_recents_title)) },
         summary = { Text(stringResource(R.string.settings_hide_from_recents_desc)) }
     )
+
+    if (SamsungCompat.isSamsung) {
+        Preference(
+            title = { Text(stringResource(R.string.settings_samsung_sleeping_apps_title)) },
+            summary = { Text(stringResource(R.string.settings_samsung_sleeping_apps_desc)) },
+            onClick = {
+                val customTabsIntent = CustomTabsIntent.Builder()
+                    .setShowTitle(true)
+                    .build()
+                customTabsIntent.launchUrl(context, "https://dontkillmyapp.com/samsung".toUri())
+            }
+        )
+    }
 
     Preference(
         title = { Text(stringResource(R.string.settings_dont_kill_my_app_title)) },

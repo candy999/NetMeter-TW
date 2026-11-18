@@ -1,5 +1,11 @@
 package vip.mystery0.pixel.meter.ui.settings
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -11,18 +17,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.zhanghai.compose.preference.ListPreference
+import me.zhanghai.compose.preference.Preference
 import me.zhanghai.compose.preference.PreferenceCategory
 import me.zhanghai.compose.preference.SliderPreference
 import me.zhanghai.compose.preference.SwitchPreference
 import me.zhanghai.compose.preference.TextFieldPreference
 import vip.mystery0.pixel.meter.R
 import vip.mystery0.pixel.meter.format.SpeedFormatter
+import vip.mystery0.pixel.meter.service.SamsungCompat
 
 @Composable
 fun NotificationSettingsSection(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
+    val canPostPromoted by viewModel.canPostPromotedNotifications.collectAsState()
     val isEnabled by viewModel.isNotificationEnabled.collectAsState(initial = false)
     val isLiveUpdateEnabled by viewModel.isLiveUpdateEnabled.collectAsState(initial = false)
     val textUp by viewModel.notificationTextUp.collectAsState(initial = "\u25B2 ")
@@ -49,6 +60,33 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
             title = { Text(stringResource(R.string.config_enable_live_update)) },
             summary = { Text(stringResource(R.string.config_enable_live_update_desc)) }
         )
+        if (isLiveUpdateEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            Preference(
+                title = { Text(stringResource(R.string.settings_live_update_permission_title)) },
+                summary = {
+                    Text(
+                        if (canPostPromoted) {
+                            stringResource(R.string.settings_live_update_permission_granted)
+                        } else {
+                            stringResource(R.string.settings_live_update_permission_denied)
+                        }
+                    )
+                },
+                onClick = { openPromotedNotificationSettings(context) }
+            )
+            if (SamsungCompat.isSamsung) {
+                Preference(
+                    title = { Text(stringResource(R.string.settings_samsung_now_bar_title)) },
+                    summary = {
+                        Column {
+                            SamsungCompat.oneUiVersionName?.let { Text(it) }
+                            Text(stringResource(R.string.settings_samsung_now_bar_desc))
+                        }
+                    },
+                    onClick = { openAppNotificationSettings(context) }
+                )
+            }
+        }
         TextFieldPreference(
             value = textUp,
             onValueChange = { viewModel.setNotificationTextUp(it) },
@@ -238,5 +276,30 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
             enabled = useCustomColor,
             onColorSelected = { viewModel.setNotificationColor(it.toArgb()) }
         )
+    }
+}
+
+/**
+ * Opens the per-app Live Update setting, falling back to the app notification settings when the
+ * device does not expose the dedicated screen.
+ */
+@RequiresApi(Build.VERSION_CODES.BAKLAVA)
+private fun openPromotedNotificationSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_MANAGE_APP_PROMOTED_NOTIFICATIONS)
+        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    try {
+        context.startActivity(intent)
+    } catch (ignored: ActivityNotFoundException) {
+        openAppNotificationSettings(context)
+    }
+}
+
+private fun openAppNotificationSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    try {
+        context.startActivity(intent)
+    } catch (ignored: ActivityNotFoundException) {
+        // Some ROMs do not expose per-app notification settings; nothing else to open.
     }
 }

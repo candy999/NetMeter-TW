@@ -37,6 +37,19 @@ Android 16+ can enable Live Update:
 
 Android decides whether the notification is ultimately promoted.
 
+On Android 16+, Settings shows whether `NotificationManager.canPostPromotedNotifications()` allows Live Updates for the app and opens `Settings.ACTION_MANAGE_APP_PROMOTED_NOTIFICATIONS` (falling back to the app notification settings) so users can re-enable it.
+
+### Samsung One UI
+
+One UI routes ongoing notifications through its own Now Bar pipeline, which predates AOSP Live Updates and ignores plain promoted notifications from apps outside Samsung's allowlist. On Samsung devices, `SamsungCompat.nowBarExtras()` adds two undocumented extras to the Live Update notification:
+
+- `android.ongoingActivityNoti.automation = true`
+- `android.ongoingActivityNoti.automationPackage = <applicationId>`
+
+These keys come from community reverse engineering of One UI 8.5 SystemUI and are reported to work on One UI 8.5 and 9.0. They only take effect when the notification still satisfies `Notification.hasPromotableCharacteristics()`, so never add `setColorized(true)`, custom views, or a group summary to the Live Update notification. Do not set `android.ongoingActivityNoti.style`, which moves the notification to Samsung's private card lane and disables the bypass. The keys are private, can change in any One UI release, and are inert on non-Samsung devices and older One UI versions.
+
+Settings also shows a Samsung-only hint with the detected One UI version (read from `ro.build.version.oneui`) and a reminder that Good Lock QuickStar's "Ongoing Chip" toggle can hide all chips. The Background section adds a Samsung-only link to the "Never sleeping apps" guide.
+
 ## 5. Formatting
 
 `SpeedFormatter` is the single source for speed formatting across the main screen, notifications, Live Update, Overlay, and threshold summaries.
@@ -49,4 +62,4 @@ The global Rate unit selects Bytes or Bits. Byte units use the existing binary s
 
 ## 7. Device Validation
 
-Validate Android 12/12L startup, Android 13+ permission grant and denial, Android 16+ Live Update, light and dark status-bar readability, custom colors across ROMs, and refresh stability with multiple ongoing notifications.
+Validate Android 12/12L startup, Android 13+ permission grant and denial, Android 16+ Live Update (including the Samsung One UI Now Bar chip), light and dark status-bar readability, custom colors across ROMs, and refresh stability with multiple ongoing notifications.

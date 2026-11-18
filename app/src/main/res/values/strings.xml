@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Pixel Meter</string>
+    <string name="app_name" translatable="false">Pixel Meter TW</string>
     <string name="title_configuration">Configuration</string>
     <string name="title_monitor_control">Monitor Control</string>
     <string name="label_total_speed">Total Speed</string>
@@ -188,4 +188,11 @@
     <string name="tile_desc_active">Active</string>
     <string name="tile_desc_inactive">Inactive</string>
     <string name="notification_permission_overlay_note">Notifications are not permitted. The floating window can still run with permission to display over other apps.</string>
+    <string name="settings_live_update_permission_title">Live Update permission</string>
+    <string name="settings_live_update_permission_granted">Allowed. The system still decides whether to show the status bar chip.</string>
+    <string name="settings_live_update_permission_denied">Turned off in system settings. Tap to allow Live Updates for this app.</string>
+    <string name="settings_samsung_now_bar_title">Samsung Now Bar compatibility</string>
+    <string name="settings_samsung_now_bar_desc">Live Updates include Samsung Now Bar extras (One UI 8.5 or later). If no status bar chip appears, tap to check this app\'s notification settings and make sure \"Ongoing Chip\" is not turned off in Good Lock QuickStar.</string>
+    <string name="settings_samsung_sleeping_apps_title">Samsung sleeping apps</string>
+    <string name="settings_samsung_sleeping_apps_desc">Add this app to Settings > Battery > Background usage limits > Never sleeping apps so One UI does not stop monitoring. Tap for a detailed guide.</string>
 </resources>

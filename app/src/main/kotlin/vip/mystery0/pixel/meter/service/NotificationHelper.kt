@@ -296,6 +296,8 @@ class NotificationHelper(private val context: Context) {
                     .setSmallIcon(R.drawable.ic_speed)
                     .setShortCriticalText(requireNotNull(renderState.statusText))
                     .setRequestPromotedOngoing(true)
+                // One UI ignores plain promoted notifications from apps outside its allowlist.
+                SamsungCompat.nowBarExtras(context)?.let(builder::addExtras)
             }
 
             "bitmap" -> {

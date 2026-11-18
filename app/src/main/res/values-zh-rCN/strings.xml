@@ -179,4 +179,11 @@
     <string name="tile_desc_active">已开启</string>
     <string name="tile_desc_inactive">已关闭</string>
     <string name="notification_permission_overlay_note">未授予通知权限。授予“显示在其他应用上层”权限后，悬浮窗仍可运行。</string>
+    <string name="settings_live_update_permission_title">实时更新权限</string>
+    <string name="settings_live_update_permission_granted">已允许。状态栏胶囊是否显示仍由系统决定。</string>
+    <string name="settings_live_update_permission_denied">已在系统设置中关闭。点击以允许本应用使用实时更新。</string>
+    <string name="settings_samsung_now_bar_title">三星 Now Bar 兼容模式</string>
+    <string name="settings_samsung_now_bar_desc">实时更新已附加三星 Now Bar 专用参数（需要 One UI 8.5 或更高版本）。如果状态栏胶囊仍未出现，请点击检查本应用的通知设置，并确认 Good Lock QuickStar 的“Ongoing Chip”未关闭。</string>
+    <string name="settings_samsung_sleeping_apps_title">三星休眠应用</string>
+    <string name="settings_samsung_sleeping_apps_desc">请在“设置 > 电池 > 后台使用限制 > 永不休眠的应用”中添加本应用，避免 One UI 停止监控。点击查看详细说明。</string>
 </resources>

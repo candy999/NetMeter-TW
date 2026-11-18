@@ -2,6 +2,7 @@ package vip.mystery0.pixel.meter.ui.settings
 
 import android.Manifest
 import android.app.Application
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
@@ -24,6 +25,7 @@ class SettingsViewModel(
     val canOverlay = MutableStateFlow(true)
     val hasNotificationPermission = MutableStateFlow(true)
     val isIgnoringBatteryOptimizations = MutableStateFlow(true)
+    val canPostPromotedNotifications = MutableStateFlow(true)
     val canEnableAutoStart = MutableStateFlow(false)
 
     val isServiceRunning = repository.isMonitoring
@@ -95,6 +97,13 @@ class SettingsViewModel(
             }
             isIgnoringBatteryOptimizations.value =
                 powerManager.isIgnoringBatteryOptimizations(application.packageName)
+            canPostPromotedNotifications.value =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                    application.getSystemService(NotificationManager::class.java)
+                        .canPostPromotedNotifications()
+                } else {
+                    false
+                }
             checkAutoStartPermissions()
         }
     }

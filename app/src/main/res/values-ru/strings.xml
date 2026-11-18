@@ -179,4 +179,11 @@
     <string name="tile_desc_active">Активно</string>
     <string name="tile_desc_inactive">Неактивно</string>
     <string name="notification_permission_overlay_note">Уведомления запрещены. Плавающее окно может работать при наличии разрешения на показ поверх других приложений.</string>
+    <string name="settings_live_update_permission_title">Разрешение на обновления в реальном времени</string>
+    <string name="settings_live_update_permission_granted">Разрешено. Показывать ли индикатор в строке состояния, по-прежнему решает система.</string>
+    <string name="settings_live_update_permission_denied">Отключено в настройках системы. Нажмите, чтобы разрешить обновления в реальном времени для этого приложения.</string>
+    <string name="settings_samsung_now_bar_title">Совместимость с Samsung Now Bar</string>
+    <string name="settings_samsung_now_bar_desc">Обновления в реальном времени содержат дополнительные параметры Samsung Now Bar (One UI 8.5 или новее). Если индикатор в строке состояния не появляется, нажмите, чтобы проверить настройки уведомлений приложения, и убедитесь, что «Ongoing Chip» не отключён в Good Lock QuickStar.</string>
+    <string name="settings_samsung_sleeping_apps_title">Спящие приложения Samsung</string>
+    <string name="settings_samsung_sleeping_apps_desc">Добавьте это приложение в «Настройки > Батарея > Ограничения фонового использования > Неспящие приложения», чтобы One UI не останавливал мониторинг. Нажмите, чтобы открыть подробное руководство.</string>
 </resources>

@@ -179,4 +179,11 @@
     <string name="settings_overlay_hide_background_desc">Torne o plano de fundo da janela flutuante totalmente transparente</string>
     <string name="settings_overlay_padding">Preenchimento do Fundo</string>
     <string name="notification_permission_overlay_note">As notificações não são permitidas. A janela flutuante ainda pode funcionar com permissão para aparecer sobre outros apps.</string>
+    <string name="settings_live_update_permission_title">Permissão de Atualização em Tempo Real</string>
+    <string name="settings_live_update_permission_granted">Permitido. O sistema ainda decide se mostra o chip na barra de status.</string>
+    <string name="settings_live_update_permission_denied">Desativado nas configurações do sistema. Toque para permitir Atualizações em Tempo Real para este aplicativo.</string>
+    <string name="settings_samsung_now_bar_title">Compatibilidade com a Samsung Now Bar</string>
+    <string name="settings_samsung_now_bar_desc">As Atualizações em Tempo Real incluem extras da Samsung Now Bar (One UI 8.5 ou superior). Se o chip não aparecer na barra de status, toque para verificar as configurações de notificação deste aplicativo e confirme que \"Ongoing Chip\" não está desativado no Good Lock QuickStar.</string>
+    <string name="settings_samsung_sleeping_apps_title">Apps em suspensão da Samsung</string>
+    <string name="settings_samsung_sleeping_apps_desc">Adicione este aplicativo em Configurações > Bateria > Limites de uso em segundo plano > Apps que nunca entram em suspensão para que a One UI não interrompa o monitoramento. Toque para ver um guia detalhado.</string>
 </resources>
