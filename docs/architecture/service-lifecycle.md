@@ -74,7 +74,7 @@ References: [notification runtime permission](https://developer.android.com/deve
 
 Run `./gradlew :app:testDebugUnitTest :app:assembleDebug lint`. `DisplayPermissionStateTest` covers all 16 combinations of selected notification / Overlay displays and granted / denied display permissions, plus restart, permission changes, toggling, and empty Onboarding selections. These JVM tests validate decision logic, not Android framework behavior.
 
-On a real Pixel, validate Android 12/12L, Android 13+, and Android 15+ / the current target as available:
+On a real device, validate Android 12/12L, Android 13+, and Android 15+ / the current target as available:
 
 1. Fresh Onboarding, Overlay only: grant Overlay permission and deny notifications. Only the Overlay permission card is required; "Finish and start" starts monitoring.
 2. Both displays selected: with Overlay granted and notifications denied, show the notification limitation and allow start. Repeat after stopping and reopening the app, with notification speed and Live Update preferences retained.
@@ -96,4 +96,4 @@ The ADB harness in `.github/scripts/overlay_permission_smoke.py` navigates Onboa
 
 The check includes notification denial, both display selections, repeated display toggles, stop/start and force-stop/relaunch, grant/revoke/regrant, and blocked starts when selected output permissions are missing. Runtime notification revocation can kill the app process on Android; the test expects that OS transition and then verifies a foreground UI restart with the Overlay still authorized.
 
-This is an emulator regression check, not a substitute for real Pixel validation. Boot startup, screen-off sleep/resume, Quick Settings Tiles, Live Update on Android 16+, newer target-SDK behavior, and OEM variations remain outside this smoke suite.
+This is an emulator regression check, not a substitute for real-device validation. Boot startup, screen-off sleep/resume, Quick Settings Tiles, Live Update on Android 16+, newer target-SDK behavior, and OEM variations remain outside this smoke suite.

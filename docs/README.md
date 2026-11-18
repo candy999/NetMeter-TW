@@ -1,6 +1,6 @@
-# Pixel Meter Documentation
+# NetMeter TW Documentation
 
-This directory contains Pixel Meter's long-term architecture, UI, maintenance, and implementation documentation. Source code, the manifest, resource directories, and `gradle/libs.versions.toml` remain the final sources of truth. Documentation must be updated alongside relevant changes.
+This directory contains NetMeter TW's long-term architecture, UI, maintenance, and implementation documentation. Source code, the manifest, resource directories, and `gradle/libs.versions.toml` remain the final sources of truth. Documentation must be updated alongside relevant changes.
 
 ## Architecture
 

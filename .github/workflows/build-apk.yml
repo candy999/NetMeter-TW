@@ -71,7 +71,7 @@ jobs:
           ./gradlew :app:assembleDebug
           mkdir -p apk-output
           cp app/build/outputs/apk/debug/app-debug.apk \
-            "apk-output/PixelMeterTW-$(git rev-parse --short=8 HEAD)-debug.apk"
+            "apk-output/NetMeterTW-$(git rev-parse --short=8 HEAD)-debug.apk"
 
       - name: Decode release keystore
         if: env.HAS_RELEASE_SIGNING == 'true'
@@ -89,12 +89,12 @@ jobs:
           ./gradlew :app:assembleRelease
           mkdir -p apk-output
           cp app/build/outputs/apk/release/app-release.apk \
-            "apk-output/PixelMeterTW-$(git rev-parse --short=8 HEAD)-release.apk"
+            "apk-output/NetMeterTW-$(git rev-parse --short=8 HEAD)-release.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: PixelMeterTW-apk
+          name: NetMeterTW-apk
           path: apk-output/*.apk
           if-no-files-found: error
 

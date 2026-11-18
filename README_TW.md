@@ -1,7 +1,7 @@
-# Pixel Meter TW
+# NetMeter TW
 
 <p align="center">
-  <img src="docs/banner-tw.jpg" width="100%" alt="Pixel Meter TW：開著 VPN 也不會重複計算的即時網速計"/>
+  <img src="docs/banner-tw.jpg" width="100%" alt="NetMeter TW：開著 VPN 也不會重複計算的即時網速計"/>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
   <a href="README.md">English</a> · 繁體中文（台灣） · <a href="README_CN.md">简体中文</a>
 </p>
 
-Pixel Meter TW 是 Pixel Tailor CN 開發的 [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) 的分支版本。原版準確計速的做法全部保留，另外加上：
+NetMeter TW 是 Pixel Tailor CN 開發的 [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) 的分支版本。原版準確計速的做法全部保留，另外加上：
 
 - **台灣繁體中文介面**，用台灣用語從原意翻譯，不是簡轉繁。
 - **三星 One UI 支援**：可以在 Now Bar 和狀態列膠囊顯示網速，並提供三星專屬的設定引導。
@@ -27,14 +27,14 @@ Pixel Meter TW 是 Pixel Tailor CN 開發的 [Pixel Meter](https://github.com/Pi
 
 ## 為什麼準確
 
-很多網速 App 會把實體網路和 VPN 通道的流量都算進去，顯示的網速會變成實際的兩倍左右。Pixel Meter TW 用 `ConnectivityManager.NetworkCallback` 找出 Wi-Fi、行動網路和乙太網路，排除 `TRANSPORT_VPN` 類型的網路，再用 `TrafficStats` 讀取每個實體介面的流量。不用靠 `tun0` 黑名單，也不需要 Root、Shizuku 或 ADB。
+很多網速 App 會把實體網路和 VPN 通道的流量都算進去，顯示的網速會變成實際的兩倍左右。NetMeter TW 用 `ConnectivityManager.NetworkCallback` 找出 Wi-Fi、行動網路和乙太網路，排除 `TRANSPORT_VPN` 類型的網路，再用 `TrafficStats` 讀取每個實體介面的流量。不用靠 `tun0` 黑名單，也不需要 Root、Shizuku 或 ADB。
 
 ## 下載
 
 | 管道 | 說明 |
 |---|---|
 | [Releases](https://github.com/candy999/NetMeter-TW/releases/latest) | 正式簽章版 APK，建議使用。 |
-| [Actions › Build APK](https://github.com/candy999/NetMeter-TW/actions/workflows/build-apk.yml) | 每次更新程式碼都會產生的測試版 APK。點進任一次執行，在頁面下方的 **Artifacts** 下載 `PixelMeterTW-apk`，需要登入 GitHub。 |
+| [Actions › Build APK](https://github.com/candy999/NetMeter-TW/actions/workflows/build-apk.yml) | 每次更新程式碼都會產生的測試版 APK。點進任一次執行，在頁面下方的 **Artifacts** 下載 `NetMeterTW-apk`，需要登入 GitHub。 |
 
 本 App 沒有上架 Google Play。正式版和測試版的簽章可能不同；如果 Android 提示無法更新，請先解除安裝另一個版本再安裝，App 的設定會被清除。
 
@@ -55,7 +55,7 @@ Pixel Meter TW 是 Pixel Tailor CN 開發的 [Pixel Meter](https://github.com/Pi
 
 ## 三星 One UI
 
-One UI 用自己的 Now Bar 機制處理常駐通知，不在三星白名單裡的 App 送出標準 Android 即時更新會被忽略。在三星手機上，Pixel Meter TW 會加上社群研究發現、三星系統會接受的 Now Bar 專用參數。
+One UI 用自己的 Now Bar 機制處理常駐通知，不在三星白名單裡的 App 送出標準 Android 即時更新會被忽略。在三星手機上，NetMeter TW 會加上社群研究發現、三星系統會接受的 Now Bar 專用參數。
 
 | One UI 版本 | 即時更新膠囊／Now Bar |
 |---|---|

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file defines the shared collaboration rules for Pixel Meter. Developers, automation, and coding agents must follow it before making changes.
+This file defines the shared collaboration rules for NetMeter TW, a fork of Pixel Meter (Pixel Tailor CN, Apache-2.0). Developers, automation, and coding agents must follow it before making changes.
 
 ## 1. Collaboration
 
@@ -16,7 +16,7 @@ This file defines the shared collaboration rules for Pixel Meter. Developers, au
 
 ## 2. Product
 
-Pixel Meter is a real-time network speed monitor for Google Pixel and stock or near-stock Android devices. It identifies physical Wi-Fi, cellular, and Ethernet networks with `ConnectivityManager.NetworkCallback`, excludes `TRANSPORT_VPN`, and reads per-interface counters with `TrafficStats.getRxBytes/getTxBytes` to avoid duplicate VPN traffic counting.
+NetMeter TW is a real-time network speed monitor for stock or near-stock Android and Samsung One UI devices. It identifies physical Wi-Fi, cellular, and Ethernet networks with `ConnectivityManager.NetworkCallback`, excludes `TRANSPORT_VPN`, and reads per-interface counters with `TrafficStats.getRxBytes/getTxBytes` to avoid duplicate VPN traffic counting.
 
 ## 3. Toolchain
 
@@ -40,7 +40,7 @@ Pixel Meter is a real-time network speed monitor for Google Pixel and stock or n
 
 Use `gradlew.bat` on Windows. Release builds require signing configuration.
 
-Unless explicitly requested, the project does not require unit or Android tests. After code changes, run `:app:assembleDebug` and `lint`. Validate network statistics, notifications, Overlay, or Foreground Service changes on a Pixel device. For data-source changes, verify VPN traffic is not counted twice. For resource changes, verify all `values-*` translations. Documentation-only tasks may use an explicitly approved narrower scope.
+Unless explicitly requested, the project does not require unit or Android tests. After code changes, run `:app:assembleDebug` and `lint`. Validate network statistics, notifications, Overlay, or Foreground Service changes on a real device (Samsung One UI and, where possible, Pixel or another near-stock device). For data-source changes, verify VPN traffic is not counted twice. For resource changes, verify all `values-*` translations. Documentation-only tasks may use an explicitly approved narrower scope.
 
 ## 5. Architecture
 
@@ -82,6 +82,7 @@ MainViewModel / SettingsViewModel
 - Android 14+ Foreground Service starts must respect background restrictions.
 - `BootReceiver` must catch startup exceptions.
 - Validate Overlay, system-bar, cutout, and immersive-mode changes on a real device.
+- Keep the internal package `vip.mystery0.pixel.meter` and the DataStore name `pixel_pulse_preferences`: renaming them breaks upstream merges or wipes user settings. The user-facing name is NetMeter TW.
 - Explain Android and Google Play constraints when changing background-survival behavior.
 
 ## 7. Localization

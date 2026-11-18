@@ -2,7 +2,7 @@
 
 ## 1. Project Structure
 
-Pixel Meter is a single-module Android application. The main module is `app/`, and the root package is `vip.mystery0.pixel.meter`.
+NetMeter TW is a single-module Android application. The main module is `app/`, and the root package is `vip.mystery0.pixel.meter`.
 
 - Language: Kotlin
 - UI: Jetpack Compose + Material 3

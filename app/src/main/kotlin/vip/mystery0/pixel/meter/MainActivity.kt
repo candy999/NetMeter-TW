@@ -62,7 +62,7 @@ import vip.mystery0.pixel.meter.format.SpeedFormatter
 import vip.mystery0.pixel.meter.ui.MainViewModel
 import vip.mystery0.pixel.meter.ui.onboarding.OnboardingScreen
 import vip.mystery0.pixel.meter.ui.settings.SettingsActivity
-import vip.mystery0.pixel.meter.ui.theme.PixelPulseTheme
+import vip.mystery0.pixel.meter.ui.theme.NetMeterTheme
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
             val appThemeMode by viewModel.appThemeMode.collectAsState()
             val appThemeColor by viewModel.appThemeColor.collectAsState()
             val useAmoledBlack by viewModel.isAppThemeUseAmoledBlack.collectAsState()
-            PixelPulseTheme(
+            NetMeterTheme(
                 themeMode = appThemeMode,
                 themeColor = appThemeColor,
                 useAmoledBlack = useAmoledBlack

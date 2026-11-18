@@ -1,7 +1,7 @@
-# Pixel Meter TW
+# NetMeter TW
 
 <p align="center">
-  <img src="docs/banner-tw.jpg" width="100%" alt="Pixel Meter TW"/>
+  <img src="docs/banner-tw.jpg" width="100%" alt="NetMeter TW"/>
 </p>
 
 <p align="center">
@@ -12,7 +12,7 @@
   <a href="README.md">English</a> · <a href="README_TW.md">繁體中文（台灣）</a> · 简体中文
 </p>
 
-Pixel Meter TW 是 Pixel Tailor CN 开发的 [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) 的分支版本，保留原版准确计速的做法，并增加：
+NetMeter TW 是 Pixel Tailor CN 开发的 [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) 的分支版本，保留原版准确计速的做法，并增加：
 
 - **繁体中文（台湾）界面**，按台湾用语翻译，不是简转繁。
 - **三星 One UI 支持**：可在 Now Bar 和状态栏胶囊显示网速，并提供三星专属的设置引导。
@@ -26,7 +26,7 @@ Pixel Meter TW 是 Pixel Tailor CN 开发的 [Pixel Meter](https://github.com/Pi
 | 渠道 | 说明 |
 |---|---|
 | [Releases](https://github.com/candy999/NetMeter-TW/releases/latest) | 正式签名版 APK，推荐使用。 |
-| [Actions › Build APK](https://github.com/candy999/NetMeter-TW/actions/workflows/build-apk.yml) | 每次提交自动构建的测试版 APK，在运行页面底部的 **Artifacts** 下载 `PixelMeterTW-apk`（需要登录 GitHub）。 |
+| [Actions › Build APK](https://github.com/candy999/NetMeter-TW/actions/workflows/build-apk.yml) | 每次提交自动构建的测试版 APK，在运行页面底部的 **Artifacts** 下载 `NetMeterTW-apk`（需要登录 GitHub）。 |
 
 正式版与测试版的签名可能不同。如果无法覆盖安装，请先卸载另一个版本，应用设置会被清除。
 

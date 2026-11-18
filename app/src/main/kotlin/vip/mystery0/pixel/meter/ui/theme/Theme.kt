@@ -72,7 +72,7 @@ private val FixedDarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun PixelPulseTheme(
+fun NetMeterTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     themeMode: Int = AppThemeMode.DEFAULT.value,
     themeColor: Int = AppThemeMode.DEFAULT_THEME_COLOR,

@@ -1,23 +1,23 @@
-# Privacy Policy for Pixel Meter
+# Privacy Policy for NetMeter TW
 
 **Effective Date:** 2026-08-26
 
-Pixel Meter ("we," "our," or "us") is committed to protecting your privacy. This policy explains how the app processes information and uses Android permissions.
+NetMeter TW ("we," "our," or "us") is committed to protecting your privacy. This policy explains how the app processes information and uses Android permissions.
 
 ## 1. Information Collection and Processing
 
-**Pixel Meter does not collect, store, sell or transmit personal data, device identifiers, network traffic contents, browsing history or app usage data.**
+**NetMeter TW does not collect, store, sell or transmit personal data, device identifiers, network traffic contents, browsing history or app usage data.**
 
-The app reads local byte counters exposed by Android for active physical network interfaces. These counters are used only to calculate the current upload and download speed on your device. Pixel Meter does not inspect packet contents, DNS requests, websites or communications.
+The app reads local byte counters exposed by Android for active physical network interfaces. These counters are used only to calculate the current upload and download speed on your device. NetMeter TW does not inspect packet contents, DNS requests, websites or communications.
 
 Settings are stored locally with Android Preferences DataStore.
 
 ## 2. Permissions
 
-Pixel Meter may declare or request the following permissions:
+NetMeter TW may declare or request the following permissions:
 
 - **`ACCESS_NETWORK_STATE`**: Identifies active network transports and physical interface names, and excludes VPN transports from speed calculation.
-- **`INTERNET`**: Supports links opened by the user, including the Cloudflare speed test. Pixel Meter does not use it for analytics or background reporting.
+- **`INTERNET`**: Supports links opened by the user, including the Cloudflare speed test. NetMeter TW does not use it for analytics or background reporting.
 - **`FOREGROUND_SERVICE`**: Runs the user-enabled real-time monitoring service.
 - **`FOREGROUND_SERVICE_SPECIAL_USE`**: Declares the network-monitor Foreground Service subtype used on Android 14 and later.
 - **`FOREGROUND_SERVICE_DATA_SYNC`**: Provides the compatible Foreground Service type used on earlier supported Android versions.
@@ -31,25 +31,23 @@ Android requires an ongoing notification while the Foreground Service is running
 
 ## 3. Third-Party Pages
 
-Pixel Meter does not include third-party analytics, advertising SDKs or tracking libraries.
+NetMeter TW does not include third-party analytics, advertising SDKs or tracking libraries.
 
 User actions may open external pages with Chrome Custom Tabs or another browser, including:
 
 - `speed.cloudflare.com`
 - GitHub
-- Pixel Tailor
-- Telegram
 - `dontkillmyapp.com`
 
-Those pages are governed by their own privacy policies and the privacy settings of the selected browser. Pixel Meter does not receive browsing data from them.
+Those pages are governed by their own privacy policies and the privacy settings of the selected browser. NetMeter TW does not receive browsing data from them.
 
 ## 4. Data Sharing and Retention
 
-Pixel Meter does not operate a server for application data and does not share user data with third parties. Local settings remain on the device until the app data is cleared or the app is uninstalled.
+NetMeter TW does not operate a server for application data and does not share user data with third parties. Local settings remain on the device until the app data is cleared or the app is uninstalled.
 
 ## 5. Children’s Privacy
 
-Pixel Meter is not directed to children under 13 and does not knowingly collect personal information from children.
+NetMeter TW is not directed to children under 13 and does not knowingly collect personal information from children.
 
 ## 6. Policy Changes
 
@@ -57,4 +55,4 @@ This policy may be updated when app functionality, permissions or legal requirem
 
 ## 7. Contact
 
-Questions or suggestions can be submitted through the [Pixel Meter GitHub repository](https://github.com/Pixel-Tailor-CN/PixelMeter/issues).
+Questions or suggestions can be submitted through the [NetMeter TW GitHub repository](https://github.com/candy999/NetMeter-TW/issues). NetMeter TW is a fork of Pixel Meter by Pixel Tailor CN.

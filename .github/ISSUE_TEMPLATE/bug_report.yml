@@ -1,5 +1,5 @@
 ﻿name: Bug report
-description: Report a reproducible problem in Pixel Meter
+description: Report a reproducible problem in NetMeter TW
 title: "[Bug] "
 labels:
   - bug
@@ -28,14 +28,14 @@ body:
   - type: input
     id: version
     attributes:
-      label: Pixel Meter version
+      label: NetMeter TW version
     validations:
       required: true
   - type: input
     id: device
     attributes:
       label: Device and Android version
-      placeholder: Pixel 9, Android 16
+      placeholder: Galaxy S23, One UI 9 / Android 17
     validations:
       required: true
   - type: checkboxes

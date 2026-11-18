@@ -9,6 +9,9 @@ import me.zhanghai.compose.preference.PreferenceCategory
 import vip.mystery0.pixel.meter.BuildConfig
 import vip.mystery0.pixel.meter.R
 
+private const val REPOSITORY_URL = "https://github.com/candy999/NetMeter-TW"
+private const val UPSTREAM_REPOSITORY_URL = "https://github.com/Pixel-Tailor-CN/PixelMeter"
+
 @Composable
 fun AboutSettingsSection() {
     val uriHandler = LocalUriHandler.current
@@ -20,17 +23,13 @@ fun AboutSettingsSection() {
     )
     Preference(
         title = { Text(stringResource(R.string.settings_github)) },
-        summary = { Text("https://github.com/Pixel-Tailor-CN/PixelMeter") },
-        onClick = { uriHandler.openUri("https://github.com/Pixel-Tailor-CN/PixelMeter") }
+        summary = { Text(REPOSITORY_URL) },
+        onClick = { uriHandler.openUri(REPOSITORY_URL) }
     )
+    // Apache-2.0 attribution for the upstream project this fork is based on.
     Preference(
-        title = { Text(stringResource(R.string.settings_pixel_tailor)) },
-        summary = { Text(stringResource(R.string.settings_pixel_tailor_desc)) },
-        onClick = { uriHandler.openUri("https://pixel.mystery0.app") }
-    )
-    Preference(
-        title = { Text(stringResource(R.string.settings_telegram_channel)) },
-        summary = { Text(stringResource(R.string.settings_telegram_channel_desc)) },
-        onClick = { uriHandler.openUri("https://t.me/pixel_tailor_cn") }
+        title = { Text(stringResource(R.string.settings_original_project_title)) },
+        summary = { Text(stringResource(R.string.settings_original_project_desc)) },
+        onClick = { uriHandler.openUri(UPSTREAM_REPOSITORY_URL) }
     )
 }

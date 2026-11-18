@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
 import vip.mystery0.pixel.meter.data.repository.NetworkRepository
 import vip.mystery0.pixel.meter.data.source.NetSpeedData
 import vip.mystery0.pixel.meter.format.SpeedFormatter
-import vip.mystery0.pixel.meter.ui.theme.PixelPulseTheme
+import vip.mystery0.pixel.meter.ui.theme.NetMeterTheme
 import kotlin.math.roundToInt
 
 private const val LOW_TRAFFIC_HIDE_SAMPLE_COUNT = 3
@@ -142,7 +142,7 @@ class OverlayWindow(
                 val appThemeMode by repository.appThemeMode.collectAsState()
                 val appThemeColor by repository.appThemeColor.collectAsState()
                 val useAmoledBlack by repository.isAppThemeUseAmoledBlack.collectAsState()
-                PixelPulseTheme(
+                NetMeterTheme(
                     themeMode = appThemeMode,
                     themeColor = appThemeColor,
                     useAmoledBlack = useAmoledBlack

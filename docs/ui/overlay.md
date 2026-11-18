@@ -48,7 +48,7 @@ The Overlay hides after the displayed speed remains below `key_overlay_auto_hide
 
 ## 6. Theme and Colors
 
-The Overlay uses the app's `PixelPulseTheme`. Default color mode uses Material 3 Surface and OnSurface colors; custom mode uses saved ARGB values.
+The Overlay uses the app's `NetMeterTheme`. Default color mode uses Material 3 Surface and OnSurface colors; custom mode uses saved ARGB values.
 
 ## 7. Device Validation
 

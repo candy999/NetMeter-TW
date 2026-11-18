@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Issue #30 black-box UI smoke tests for an installed Pixel Meter debug APK.
+"""Issue #30 black-box UI smoke tests for an installed NetMeter TW debug APK.
 
 Requires an unlocked API 33 x86_64 English emulator and Python 3.10+. No external
 Python dependencies, instrumentation, root, service-start commands, preference
@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 
-PACKAGE = "vip.mystery0.pixel.meter"
+PACKAGE = "io.github.candy999.netmeter"
 NOTIFICATION_PERMISSION = "android.permission.POST_NOTIFICATIONS"
 OVERLAY_LABEL = "Enable Floating Window"
 NOTIFICATION_LABEL = "Show on Notification"
@@ -366,7 +366,7 @@ class Harness:
                 "pm clear failed; cases cannot be isolated")
         self.permissions(overlay, notification)
         self.launch()
-        self.find("Set up Pixel Meter")
+        self.find("Set up NetMeter TW")
         self.assert_runtime(False, False, duration=1)
 
     def onboarding(self, overlay: bool, notification: bool, allowed: bool = True) -> None:
@@ -648,14 +648,14 @@ def application_errors(log: str, package: str) -> list[str]:
 
 def save_reports(output: Path, results: list[dict]) -> None:
     failures = sum(result["status"] == "failed" for result in results)
-    payload = {"suite": "PixelMeter issue #30 API 33 UI smoke", "cases": results,
+    payload = {"suite": "NetMeterTW issue #30 API 33 UI smoke", "cases": results,
                "tests": len(results), "failures": failures}
     (output / "results.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     suite = ET.Element("testsuite", name=payload["suite"], tests=str(len(results)),
                        failures=str(failures), errors="0", skipped="0",
                        time=str(round(sum(result["duration_seconds"] for result in results), 3)))
     for result in results:
-        case = ET.SubElement(suite, "testcase", classname="PixelMeter.OverlayPermissionSmoke",
+        case = ET.SubElement(suite, "testcase", classname="NetMeterTW.OverlayPermissionSmoke",
                              name=result["name"], time=str(result["duration_seconds"]))
         if result["status"] == "failed":
             ET.SubElement(case, "failure", message=result["error"].splitlines()[0]).text = result["error"]
@@ -711,7 +711,7 @@ class ParserTests(unittest.TestCase):
     def test_api33_launcher_summary_is_in_activity_dump(self):
         launcher = "com.google.android.apps.nexuslauncher"
         # Representative lines from a real API 33 Pixel 5 CI capture. A retained
-        # STOPPED Pixel Meter task below the launcher must not confuse the check.
+        # STOPPED NetMeter TW task below the launcher must not confuse the check.
         dump = (
             "ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)\n"
             "Display #0 (activities from top to bottom):\n"

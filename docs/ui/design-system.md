@@ -2,7 +2,7 @@
 
 ## 1. Principles
 
-Pixel Meter uses Jetpack Compose and Material 3 to provide an experience consistent with Pixel and stock Android:
+NetMeter TW uses Jetpack Compose and Material 3 to provide an experience consistent with stock Android and Samsung One UI:
 
 - Use standard Material 3 components.
 - Support edge-to-edge layouts.

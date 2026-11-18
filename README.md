@@ -1,7 +1,7 @@
-# Pixel Meter TW
+# NetMeter TW
 
 <p align="center">
-  <img src="docs/banner-en.jpg" width="100%" alt="Pixel Meter TW: real-time network speed that never double counts VPN traffic"/>
+  <img src="docs/banner-en.jpg" width="100%" alt="NetMeter TW: real-time network speed that never double counts VPN traffic"/>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
   English · <a href="README_TW.md">繁體中文（台灣）</a> · <a href="README_CN.md">简体中文</a>
 </p>
 
-Pixel Meter TW is a fork of [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) by Pixel Tailor CN. It keeps everything that makes the original accurate and adds:
+NetMeter TW is a fork of [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) by Pixel Tailor CN. It keeps everything that makes the original accurate and adds:
 
 - A full **Traditional Chinese (Taiwan)** interface written with Taiwan terminology, not converted from Simplified Chinese.
 - **Samsung One UI support** for the Now Bar and status bar chip, plus Samsung-specific setup guidance.
@@ -27,14 +27,14 @@ Pixel Meter TW is a fork of [Pixel Meter](https://github.com/Pixel-Tailor-CN/Pix
 
 ## Why it is accurate
 
-Many speed meters count traffic on both the physical network and the VPN tunnel, so the speed shown can be about twice the real value. Pixel Meter TW uses `ConnectivityManager.NetworkCallback` to find Wi-Fi, cellular, and Ethernet networks, excludes networks with `TRANSPORT_VPN`, and reads each physical interface with `TrafficStats`. It does not rely on a `tun0` blacklist, and needs no Root, Shizuku, or ADB.
+Many speed meters count traffic on both the physical network and the VPN tunnel, so the speed shown can be about twice the real value. NetMeter TW uses `ConnectivityManager.NetworkCallback` to find Wi-Fi, cellular, and Ethernet networks, excludes networks with `TRANSPORT_VPN`, and reads each physical interface with `TrafficStats`. It does not rely on a `tun0` blacklist, and needs no Root, Shizuku, or ADB.
 
 ## Download
 
 | Channel | What you get |
 |---|---|
 | [Releases](https://github.com/candy999/NetMeter-TW/releases/latest) | Signed release APK. Recommended. |
-| [Actions › Build APK](https://github.com/candy999/NetMeter-TW/actions/workflows/build-apk.yml) | A test APK for every push. Open a run and download `PixelMeterTW-apk` from **Artifacts** (GitHub sign-in required). |
+| [Actions › Build APK](https://github.com/candy999/NetMeter-TW/actions/workflows/build-apk.yml) | A test APK for every push. Open a run and download `NetMeterTW-apk` from **Artifacts** (GitHub sign-in required). |
 
 The app is not on Google Play. Release builds and Actions test builds may use different signatures. If Android refuses to update, uninstall the other build first; this clears the app's settings.
 
@@ -55,7 +55,7 @@ The app is not on Google Play. Release builds and Actions test builds may use di
 
 ## Samsung One UI
 
-One UI handles ongoing notifications through its own Now Bar pipeline, which ignores standard Android Live Updates from apps outside Samsung's allowlist. On Samsung devices, Pixel Meter TW adds the Now Bar extras that community research found Samsung SystemUI honors. One UI labels a chip posted with these extras "Gemini Intelligence". To show the app's own name, turn on **Developer options › Live notifications for all apps** (the name can vary by One UI version); the app then skips the extras automatically. **Settings › Notifications › Now Bar label mode** can force either behavior.
+One UI handles ongoing notifications through its own Now Bar pipeline, which ignores standard Android Live Updates from apps outside Samsung's allowlist. On Samsung devices, NetMeter TW adds the Now Bar extras that community research found Samsung SystemUI honors. One UI labels a chip posted with these extras "Gemini Intelligence". To show the app's own name, turn on **Developer options › Live notifications for all apps** (the name can vary by One UI version); the app then skips the extras automatically. **Settings › Notifications › Now Bar label mode** can force either behavior.
 
 | One UI | Live Update chip / Now Bar |
 |---|---|

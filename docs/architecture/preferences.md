@@ -2,7 +2,7 @@
 
 ## 1. Storage
 
-Pixel Meter uses Preferences DataStore named `pixel_pulse_preferences`.
+NetMeter TW uses Preferences DataStore named `pixel_pulse_preferences`.
 
 `DataStoreRepository` owns keys and raw reads or writes. `NetworkRepository` exposes settings as `StateFlow` and provides application-level update methods.
 

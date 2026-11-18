@@ -2,4 +2,4 @@
 contact_links:
   - name: Translation contributions
     url: https://hosted.weblate.org/engage/pixel-meter/
-    about: Help translate Pixel Meter through Weblate.
+    about: Translations other than Traditional Chinese (Taiwan) come from the upstream Pixel Meter Weblate project. Send zh-TW fixes as pull requests to this repository.

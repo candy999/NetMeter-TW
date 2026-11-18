@@ -1,6 +1,6 @@
-# Contributing to Pixel Meter
+# Contributing to NetMeter TW
 
-Thank you for contributing to Pixel Meter.
+Thank you for contributing to NetMeter TW.
 
 ## Communication Language
 
@@ -14,13 +14,13 @@ English is the primary engineering language for this repository:
 ## Before Opening an Issue
 
 - Search existing Issues first.
-- Include the Android version, device model, Pixel Meter version, and reproduction steps for bugs.
+- Include the Android version, device model, NetMeter TW version, and reproduction steps for bugs.
 - Mention whether a VPN, notification speed, Live Update, or Overlay was enabled when relevant.
 - Do not post private signing credentials, logs containing personal data, or other secrets.
 
 ## Development Setup
 
-Pixel Meter is a single-module Android application with a minimum SDK of Android 12 / API 31. Version and dependency declarations live in `gradle/libs.versions.toml`.
+NetMeter TW is a single-module Android application with a minimum SDK of Android 12 / API 31. Version and dependency declarations live in `gradle/libs.versions.toml`.
 
 On Windows:
 

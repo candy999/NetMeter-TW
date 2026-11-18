@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pixel Meter TW launcher foreground: a speed gauge arc with upload/download arrows.
+<!-- NetMeter TW launcher foreground: a speed gauge arc with upload/download arrows.
      The arrows are centred on the arc, and the whole mark is shifted down so its visual
      centre of mass sits slightly above the icon centre (optical centre).
      Drawn in white on @color/ic_launcher_background (#0E4686) and reused as the monochrome layer. -->

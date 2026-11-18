@@ -16,7 +16,7 @@
 
 - [ ] `:app:assembleDebug`
 - [ ] `lint`
-- [ ] Pixel-device validation, if required
+- [ ] Real-device validation (Samsung One UI), if required
 - [ ] VPN behavior checked, if network statistics changed
 - [ ] All supported translations updated, if String Resources changed
 

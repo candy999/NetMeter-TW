@@ -19,13 +19,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PixelMeter"
+        android:theme="@style/Theme.NetMeterTW"
         tools:targetApi="33">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.PixelMeter">
+            android:theme="@style/Theme.NetMeterTW">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -36,7 +36,7 @@
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
             android:label="@string/title_settings"
-            android:theme="@style/Theme.PixelMeter" />
+            android:theme="@style/Theme.NetMeterTW" />
 
         <service
             android:name=".service.NetworkMonitorService"

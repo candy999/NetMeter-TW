@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-Pixel Meter must count only physical-link traffic while a VPN is active, preventing the same bytes from being counted on both physical and virtual interfaces.
+NetMeter TW must count only physical-link traffic while a VPN is active, preventing the same bytes from being counted on both physical and virtual interfaces.
 
 ## 2. Network Detection
 
@@ -71,7 +71,7 @@ The first sample after monitoring starts or resumes (including screen-on) establ
 
 ## 7. Validation Scenarios
 
-Validate changes to this path on a Pixel device with:
+Validate changes to this path on a real device (Samsung One UI and a near-stock device where possible) with:
 
 - Wi-Fi only.
 - Cellular only.

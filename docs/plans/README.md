@@ -1,6 +1,6 @@
 # Requirement Designs and Implementation Plans
 
-`docs/plans/` is the canonical location for future Pixel Meter requirement designs and implementation plans.
+`docs/plans/` is the canonical location for future NetMeter TW requirement designs and implementation plans.
 
 ## Naming
 

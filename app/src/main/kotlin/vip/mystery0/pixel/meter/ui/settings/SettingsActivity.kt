@@ -53,7 +53,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import vip.mystery0.pixel.meter.R
-import vip.mystery0.pixel.meter.ui.theme.PixelPulseTheme
+import vip.mystery0.pixel.meter.ui.theme.NetMeterTheme
 
 private const val SETTINGS_TWO_PANE_MIN_WIDTH_DP = 840
 private const val SETTINGS_PAGE_TRANSITION_DURATION_MS = 250
@@ -73,7 +73,7 @@ class SettingsActivity : ComponentActivity() {
             val appThemeMode by viewModel.appThemeMode.collectAsState()
             val appThemeColor by viewModel.appThemeColor.collectAsState()
             val useAmoledBlack by viewModel.isAppThemeUseAmoledBlack.collectAsState()
-            PixelPulseTheme(
+            NetMeterTheme(
                 themeMode = appThemeMode,
                 themeColor = appThemeColor,
                 useAmoledBlack = useAmoledBlack

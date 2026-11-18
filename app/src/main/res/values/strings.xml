@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Pixel Meter TW</string>
+    <string name="app_name" translatable="false">NetMeter TW</string>
     <string name="title_configuration">Configuration</string>
     <string name="title_monitor_control">Monitor Control</string>
     <string name="label_total_speed">Total Speed</string>
@@ -129,10 +129,8 @@
     <string name="settings_category_about">About</string>
     <string name="settings_app_version">App Version</string>
     <string name="settings_github">GitHub</string>
-    <string name="settings_pixel_tailor">Pixel Tailor</string>
-    <string name="settings_pixel_tailor_desc">Refining the pure Android experience for Pixel users in China</string>
-    <string name="settings_telegram_channel">Telegram Channel</string>
-    <string name="settings_telegram_channel_desc">Follow the Telegram channel for updates</string>
+    <string name="settings_original_project_title">Original project: Pixel Meter</string>
+    <string name="settings_original_project_desc">By Pixel Tailor CN, licensed under Apache-2.0. NetMeter TW is a fork of it.</string>
 
     <string name="color_picker_title">Select Color</string>
 
@@ -140,12 +138,12 @@
     <string name="content_description_back">Back</string>
     <string name="notification_channel_description">Shows real-time network speed in the status bar</string>
 
-    <string name="onboarding_title">Set up Pixel Meter</string>
+    <string name="onboarding_title">Set up NetMeter TW</string>
     <string name="onboarding_step">Step %1$d of %2$d</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_welcome_title">Accurate speed monitoring, even with a VPN</string>
-    <string name="onboarding_welcome_desc">Choose how Pixel Meter displays your current network speed. You can change every option later in Settings.</string>
-    <string name="onboarding_vpn_benefit">Pixel Meter reads physical Wi-Fi, cellular, and Ethernet interfaces to avoid counting VPN traffic twice.</string>
+    <string name="onboarding_welcome_desc">Choose how NetMeter TW displays your current network speed. You can change every option later in Settings.</string>
+    <string name="onboarding_vpn_benefit">NetMeter TW reads physical Wi-Fi, cellular, and Ethernet interfaces to avoid counting VPN traffic twice.</string>
     <string name="onboarding_start_setup">Start setup</string>
     <string name="onboarding_setup_later">Set up later</string>
     <string name="onboarding_display_title">Choose how speed is displayed</string>
@@ -162,7 +160,7 @@
     <string name="onboarding_back">Back</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_permission_title">Grant required permissions</string>
-    <string name="onboarding_permission_desc">Pixel Meter only requests permissions required by the display methods you selected.</string>
+    <string name="onboarding_permission_desc">NetMeter TW only requests permissions required by the display methods you selected.</string>
     <string name="onboarding_notification_permission_desc">Required for notification speed and Live Update. The floating window can run without this permission.</string>
     <string name="onboarding_overlay_permission_desc">Required to draw the floating speed meter over other apps.</string>
     <string name="onboarding_permission_optional_note">Grant the permissions required by your selected features, or choose to grant them later. Your choices will be saved, but monitoring will not start automatically.</string>

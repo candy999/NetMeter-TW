@@ -121,7 +121,7 @@ class NotificationHelper(private val context: Context) {
     }
 
     // Icon generation
-    // On Pixel, small icon is typically 24dp. We render at higher res (e.g. 48px or 96px) for clarity
+    // The status bar small icon is typically 24dp. We render at higher res (e.g. 48px or 96px) for clarity
     private val size =
         (context.resources.displayMetrics.density * 24).roundToInt().coerceAtLeast(48)
     private val bitmap = createBitmap(size, size)
