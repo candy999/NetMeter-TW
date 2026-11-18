@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write # Required to create the GitHub Release.
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -23,6 +26,22 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Check signing secrets
+        env:
+          SIGN_KEY_STORE_BASE64: ${{ secrets.SIGN_KEY_STORE_BASE64 }}
+          SIGN_KEY_STORE_PASSWORD: ${{ secrets.SIGN_KEY_STORE_PASSWORD }}
+          SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
+          SIGN_KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for name in SIGN_KEY_STORE_BASE64 SIGN_KEY_STORE_PASSWORD SIGN_KEY_ALIAS SIGN_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Repository secret $name is not set."
+              missing=1
+            fi
+          done
+          exit $missing
 
       - name: Install jq
         run: |
@@ -59,18 +78,19 @@ jobs:
             --ks-key-alias=${{ secrets.SIGN_KEY_ALIAS }} \
             --key-pass=pass:${{ secrets.SIGN_KEY_PASSWORD }}
           unzip apk-output/app.apks universal.apk -d apk-output/
-          mv apk-output/universal.apk "apk-output/PixelMeter-${GITHUB_REF_NAME}.apk"
+          mv apk-output/universal.apk "apk-output/PixelMeterTW-${GITHUB_REF_NAME}.apk"
           cp app/build/outputs/bundle/release/app-release.aab \
-             "apk-output/PixelMeter-${GITHUB_REF_NAME}.aab"
+             "apk-output/PixelMeterTW-${GITHUB_REF_NAME}.aab"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: PixelMeter ${{ github.ref_name }}
-          body_path: CHANGELOG.md
+          name: Pixel Meter TW ${{ github.ref_name }}
+          # Fork release notes; CHANGELOG.md stays as upstream's history for easier merges.
+          body_path: RELEASE_NOTES.md
           files: |
-            apk-output/PixelMeter-${{ github.ref_name }}.apk
-            apk-output/PixelMeter-${{ github.ref_name }}.aab
+            apk-output/PixelMeterTW-${{ github.ref_name }}.apk
+            apk-output/PixelMeterTW-${{ github.ref_name }}.aab
 
       - name: Cleanup Keystore
         if: always()
