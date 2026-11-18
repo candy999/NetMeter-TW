@@ -1,7 +1,7 @@
 # Pixel Meter TW
 
 <p align="center">
-  <img src="app/src/main/ic_launcher-playstore.png" width="180" alt="Pixel Meter TW 圖示"/>
+  <img src="docs/banner-tw.jpg" width="100%" alt="Pixel Meter TW：開著 VPN 也不會重複計算的即時網速計"/>
 </p>
 
 <p align="center">

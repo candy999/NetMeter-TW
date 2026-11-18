@@ -1,7 +1,7 @@
 # Pixel Meter TW
 
 <p align="center">
-  <img src="app/src/main/ic_launcher-playstore.png" width="180" alt="Pixel Meter TW logo"/>
+  <img src="docs/banner-en.jpg" width="100%" alt="Pixel Meter TW: real-time network speed that never double counts VPN traffic"/>
 </p>
 
 <p align="center">

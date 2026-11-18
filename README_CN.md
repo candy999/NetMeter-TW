@@ -1,7 +1,7 @@
 # Pixel Meter TW
 
 <p align="center">
-  <img src="app/src/main/ic_launcher-playstore.png" width="180" alt="Pixel Meter TW 图标"/>
+  <img src="docs/banner-tw.jpg" width="100%" alt="Pixel Meter TW"/>
 </p>
 
 <p align="center">
