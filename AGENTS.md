@@ -27,7 +27,7 @@ Pixel Meter is a real-time network speed monitor for Google Pixel and stock or n
 - Global opt-in: `ExperimentalMaterial3Api`
 - `versionCode`: Git commit count
 - `versionName`: `app-version` + build-type suffix + Git information
-- Locales: English, Simplified Chinese, Portuguese, Brazilian Portuguese, and Russian
+- Locales: English, Simplified Chinese, Traditional Chinese (Taiwan), Portuguese, Brazilian Portuguese, and Russian
 - Default resources: English; see `app/src/main/res/resources.properties`
 
 ## 4. Build and Validation

@@ -6,6 +6,7 @@ The resource directories currently include:
 
 - `values/`: default English resources
 - `values-zh-rCN/`: Simplified Chinese
+- `values-zh-rTW/`: Traditional Chinese (Taiwan). Written with Taiwan terminology rather than converted from Simplified Chinese. Android resolves `zh-HK` and other Traditional Chinese locales to this directory through script matching, so no separate `values-zh-rHK/` is provided.
 - `values-pt/`: Portuguese
 - `values-pt-rBR/`: Brazilian Portuguese
 - `values-ru/`: Russian

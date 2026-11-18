@@ -78,7 +78,7 @@ Android 要求 Foreground Service 持续显示通知。关闭动态通知网速�
 
 ## 支持语言
 
-当前包含英语、简体中文、葡萄牙语、巴西葡萄牙语和俄语资源，翻译通过 Weblate 管理。
+当前包含英语、简体中文、繁体中文（台湾）、葡萄牙语、巴西葡萄牙语和俄语资源，翻译通过 Weblate 管理。
 
 [在 Weblate 上帮助翻译 Pixel Meter](https://hosted.weblate.org/engage/pixel-meter/)
 
