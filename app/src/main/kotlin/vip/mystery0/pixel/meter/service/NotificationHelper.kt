@@ -35,7 +35,9 @@ class NotificationHelper(private val context: Context) {
             )
             notificationManager.createNotificationChannelGroup(group)
 
-            // Use IMPORTANCE_LOW for silent notification
+            // The channel is silent because its sound is null. IMPORTANCE_DEFAULT is kept on
+            // purpose: it keeps the status-bar icon visible and the notification eligible for
+            // Live Update promotion.
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 context.getString(R.string.notification_channel_name),
@@ -51,12 +53,11 @@ class NotificationHelper(private val context: Context) {
         }
     }
 
-    data class NotificationBuildResult(
-        val notification: Notification,
-        val fingerprint: String
-    )
-
-    private data class NotificationRenderState(
+    /**
+     * Everything that determines the visible notification output. The Service compares render
+     * states to decide whether a repost is needed before any [Notification] is built.
+     */
+    data class NotificationRenderState(
         val mode: String,
         val contentText: String,
         val statusText: String? = null,
@@ -65,22 +66,30 @@ class NotificationHelper(private val context: Context) {
         val rateUnit: Int = 0,
         val iconMode: Int = 0,
         val useCustomColor: Boolean = false,
-        val color: Int = 0
+        val color: Int = 0,
+        val textSize: Float = 0f,
+        val unitSize: Float = 0f
     ) {
         /**
-         * Creates a stable fingerprint from visible output to avoid reposting equivalent notifications.
+         * Returns true when everything except the notification drawer [contentText] is equal,
+         * that is, when the status-bar icon, Live Update chip, and styling would not change.
          */
-        fun toFingerprint(): String = listOf(
-            mode,
-            contentText,
-            statusText.orEmpty(),
-            valueText.orEmpty(),
-            unitText.orEmpty(),
-            rateUnit.toString(),
-            iconMode.toString(),
-            useCustomColor.toString(),
-            if (useCustomColor) color.toString() else ""
-        ).joinToString(separator = "|")
+        fun hasSameStatusBarOutput(other: NotificationRenderState): Boolean =
+            copy(contentText = "") == other.copy(contentText = "")
+    }
+
+    // Reused for every notification; the Intent never changes.
+    private val contentIntent: PendingIntent by lazy {
+        val intent = Intent().apply {
+            setClassName(context, MainActivity::class.java.name)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
     // Icon generation
@@ -107,7 +116,23 @@ class NotificationHelper(private val context: Context) {
         textSize = size * 0.35f // Unit text
     }
 
-    fun buildNotification(
+    /**
+     * Returns the speed that drives the status-bar icon and the low-traffic decision.
+     */
+    fun selectIconSpeed(speed: NetSpeedData, iconMode: Int): Long = when (iconMode) {
+        1 -> speed.uploadSpeed
+        2 -> speed.downloadSpeed
+        else -> speed.totalSpeed
+    }
+
+    /**
+     * Computes the visible state without building a [Notification]. This is cheap enough to run
+     * for every sample.
+     *
+     * @param isLowTraffic whether the icon speed is considered below the notification threshold.
+     * The caller applies hysteresis (see [LowTrafficHysteresis]).
+     */
+    fun createRenderState(
         speed: NetSpeedData,
         isLiveUpdate: Boolean,
         isNotificationEnabled: Boolean,
@@ -118,67 +143,19 @@ class NotificationHelper(private val context: Context) {
         iconMode: Int,
         textSize: Float = 0.65f,
         unitSize: Float = 0.35f,
-        threshold: Long = 0L,
+        isLowTraffic: Boolean = false,
         lowTrafficMode: Int = 0, // 0: Static, 1: Dynamic
         useCustomColor: Boolean = false,
         color: Int = 0,
         speedUnit: Int = 0,
         minSpeedUnit: Int = 0,
-        rateUnit: Int = 0,
-        postedAtMillis: Long
-    ): NotificationBuildResult {
-        val renderState = createRenderState(
-            speed = speed,
-            isLiveUpdate = isLiveUpdate,
-            isNotificationEnabled = isNotificationEnabled,
-            textUp = textUp,
-            textDown = textDown,
-            upFirst = upFirst,
-            displayMode = displayMode,
-            iconMode = iconMode,
-            threshold = threshold,
-            lowTrafficMode = lowTrafficMode,
-            useCustomColor = useCustomColor,
-            color = color,
-            speedUnit = speedUnit,
-            minSpeedUnit = minSpeedUnit,
-            rateUnit = rateUnit
-        )
-        return NotificationBuildResult(
-            notification = buildNotificationFromState(
-                renderState = renderState,
-                textSize = textSize,
-                unitSize = unitSize,
-                postedAtMillis = postedAtMillis
-            ),
-            fingerprint = renderState.toFingerprint()
-        )
-    }
-
-    private fun createRenderState(
-        speed: NetSpeedData,
-        isLiveUpdate: Boolean,
-        isNotificationEnabled: Boolean,
-        textUp: String,
-        textDown: String,
-        upFirst: Boolean,
-        displayMode: Int,
-        iconMode: Int,
-        threshold: Long,
-        lowTrafficMode: Int,
-        useCustomColor: Boolean,
-        color: Int,
-        speedUnit: Int,
-        minSpeedUnit: Int,
-        rateUnit: Int
+        rateUnit: Int = 0
     ): NotificationRenderState {
+        // The color only matters when the custom color is enabled.
+        val effectiveColor = if (useCustomColor) color else 0
         var shouldLiveUpdate = isLiveUpdate
         val normalizedIconMode = if (iconMode in 0..2) iconMode else 0
-        val iconSpeed = when (normalizedIconMode) {
-            1 -> speed.uploadSpeed
-            2 -> speed.downloadSpeed
-            else -> speed.totalSpeed
-        }
+        val iconSpeed = selectIconSpeed(speed, normalizedIconMode)
 
         if (!isNotificationEnabled) {
             return NotificationRenderState(
@@ -187,11 +164,13 @@ class NotificationHelper(private val context: Context) {
                 rateUnit = rateUnit,
                 iconMode = normalizedIconMode,
                 useCustomColor = useCustomColor,
-                color = color
+                color = effectiveColor,
+                textSize = textSize,
+                unitSize = unitSize
             )
         }
 
-        if (iconSpeed < threshold) {
+        if (isLowTraffic) {
             if (lowTrafficMode == 0) {
                 return NotificationRenderState(
                     mode = "threshold-static",
@@ -199,7 +178,9 @@ class NotificationHelper(private val context: Context) {
                     rateUnit = rateUnit,
                     iconMode = normalizedIconMode,
                     useCustomColor = useCustomColor,
-                    color = color
+                    color = effectiveColor,
+                    textSize = textSize,
+                    unitSize = unitSize
                 )
             }
             shouldLiveUpdate = false
@@ -238,7 +219,9 @@ class NotificationHelper(private val context: Context) {
                 rateUnit = rateUnit,
                 iconMode = normalizedIconMode,
                 useCustomColor = useCustomColor,
-                color = color
+                color = effectiveColor,
+                textSize = textSize,
+                unitSize = unitSize
             )
         }
 
@@ -254,31 +237,23 @@ class NotificationHelper(private val context: Context) {
             rateUnit = rateUnit,
             iconMode = normalizedIconMode,
             useCustomColor = useCustomColor,
-            color = color
+            color = effectiveColor,
+            textSize = textSize,
+            unitSize = unitSize
         )
     }
 
-    private fun buildNotificationFromState(
+    /**
+     * Builds the [Notification] for [renderState]. Call this only when a repost is needed.
+     */
+    fun buildNotification(
         renderState: NotificationRenderState,
-        textSize: Float,
-        unitSize: Float,
         postedAtMillis: Long
     ): Notification {
-        val intent = Intent().apply {
-            setClassName(context, MainActivity::class.java.name)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(contentIntent)
             .setVisibility(NotificationCompat.VISIBILITY_SECRET)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setWhen(postedAtMillis)
@@ -309,8 +284,8 @@ class NotificationHelper(private val context: Context) {
                 val cyValue = size * 0.5f
                 val cyUnit = size * 0.95f
 
-                textPaint.textSize = size * textSize
-                unitPaint.textSize = size * unitSize
+                textPaint.textSize = size * renderState.textSize
+                unitPaint.textSize = size * renderState.unitSize
                 val maxTextWidth = size * 0.92f
                 val valueWidth = textPaint.measureText(valueText)
                 if (valueWidth > maxTextWidth) {

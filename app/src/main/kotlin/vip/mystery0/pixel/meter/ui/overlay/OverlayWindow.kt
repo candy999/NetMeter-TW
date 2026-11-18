@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +52,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import vip.mystery0.pixel.meter.data.repository.NetworkRepository
 import vip.mystery0.pixel.meter.data.source.NetSpeedData
@@ -57,18 +60,28 @@ import vip.mystery0.pixel.meter.format.SpeedFormatter
 import vip.mystery0.pixel.meter.ui.theme.PixelPulseTheme
 import kotlin.math.roundToInt
 
+private const val LOW_TRAFFIC_HIDE_SAMPLE_COUNT = 3
+
 class OverlayWindow(
     private val context: Context,
     private val repository: NetworkRepository
 ) : LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    private companion object {
-        const val LOW_TRAFFIC_HIDE_SAMPLE_COUNT = 3
-    }
-
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var view: View? = null
     private var params: WindowManager.LayoutParams? = null
+
+    // Set synchronously by show() and cleared by hide(). The view itself is attached later by
+    // showJob, so this flag (not `view`) decides whether a show is in progress or completed.
+    @Volatile
+    private var isShowRequested = false
+    private var showJob: Job? = null
+
+    /**
+     * True while the Overlay is attached or being attached. Safe to read from any thread;
+     * [show] and [hide] must be called on the main thread.
+     */
+    val isActive: Boolean get() = isShowRequested
 
     private var lifecycleRegistry = LifecycleRegistry(this)
     private var savedStateRegistryController = SavedStateRegistryController.create(this)
@@ -82,7 +95,8 @@ class OverlayWindow(
     override val savedStateRegistry: SavedStateRegistry get() = savedStateRegistryController.savedStateRegistry
 
     fun show() {
-        if (view != null) return
+        if (isShowRequested) return
+        isShowRequested = true
 
         lifecycleRegistry = LifecycleRegistry(this)
         savedStateRegistryController = SavedStateRegistryController.create(this)
@@ -93,7 +107,8 @@ class OverlayWindow(
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
-        lifecycleScope.launch {
+        showJob = lifecycleScope.launch {
+            // hide() cancels this Job, so nothing below runs after a hide during these reads.
             val (initialX, initialY) = repository.getOverlayPosition()
 
             val isShowOnStatusBarInitially = repository.isOverlayShowOnStatusBar.value
@@ -164,8 +179,7 @@ class OverlayWindow(
                     var orientation by remember { mutableIntStateOf(initialConfig.orientation) }
                     var isStatusBarVisible by remember { mutableStateOf(true) }
                     var isNavigationBarVisible by remember { mutableStateOf(true) }
-                    var lowTrafficSamples by remember { mutableIntStateOf(0) }
-                    var lowTrafficDisplayMode by remember { mutableIntStateOf(displayMode) }
+                    var shouldHideForLowTraffic by remember { mutableStateOf(false) }
 
                     DisposableEffect(context) {
                         val callbacks = object : ComponentCallbacks {
@@ -258,30 +272,15 @@ class OverlayWindow(
                     val shouldHideForImmersiveMode =
                         isOverlayHideInImmersiveMode &&
                                 (!isStatusBarVisible || !isNavigationBarVisible)
-                    val lowTrafficSpeed = when (displayMode) {
-                        1 -> speedState.uploadSpeed
-                        2 -> speedState.downloadSpeed
-                        else -> speedState.totalSpeed
-                    }
-                    LaunchedEffect(speedUpdateVersion, overlayAutoHideThreshold, displayMode) {
-                        if (displayMode != lowTrafficDisplayMode) {
-                            lowTrafficDisplayMode = displayMode
-                            lowTrafficSamples = 0
-                            return@LaunchedEffect
-                        }
-                        lowTrafficSamples = when {
-                            speedUpdateVersion == 0L -> 0
-                            overlayAutoHideThreshold <= 0L -> 0
-                            lowTrafficSpeed < overlayAutoHideThreshold ->
-                                (lowTrafficSamples + 1)
-                                    .coerceAtMost(LOW_TRAFFIC_HIDE_SAMPLE_COUNT)
-
-                            else -> 0
-                        }
-                    }
-                    val shouldHideForLowTraffic =
-                        overlayAutoHideThreshold > 0L &&
-                                lowTrafficSamples >= LOW_TRAFFIC_HIDE_SAMPLE_COUNT
+                    // The per-sample speed is only read inside child composables so that a
+                    // new sample does not recompose this root scope.
+                    LowTrafficMonitor(
+                        speed = { speedState },
+                        speedUpdateVersion = { speedUpdateVersion },
+                        displayMode = displayMode,
+                        autoHideThreshold = overlayAutoHideThreshold,
+                        onShouldHideChanged = { shouldHideForLowTraffic = it }
+                    )
 
                     val shouldHideOverlay =
                         shouldHideForLandscape || shouldHideForImmersiveMode ||
@@ -307,47 +306,59 @@ class OverlayWindow(
                         }
                     }
 
-                    OverlayContent(
-                        speed = speedState,
-                        useDefaultColors = isOverlayUseDefaultColors,
-                        hideBackground = isOverlayHideBackground,
-                        bgColor = bgColor,
-                        textColor = textColor,
-                        cornerRadius = cornerRadius,
-                        padding = padding,
-                        textSize = textSize,
-                        textUp = textUp,
-                        textDown = textDown,
-                        upFirst = upFirst,
-                        direction = direction,
-                        displayMode = displayMode,
-                        alignment = alignment,
-                        meterSpacing = meterSpacing,
-                        speedUnit = speedUnit,
-                        minSpeedUnit = minSpeedUnit,
-                        speedRateUnit = speedRateUnit,
-                        onDrag = { x, y ->
-                            if (!isLocked) {
+                    if (shouldHideOverlay) {
+                        // Do not compose or draw the speed text while hidden. The placeholder
+                        // keeps the window non-empty so the attached root keeps receiving
+                        // WindowInsets.
+                        Spacer(modifier = Modifier.size(1.dp))
+                    } else {
+                        OverlayContent(
+                            speed = { speedState },
+                            useDefaultColors = isOverlayUseDefaultColors,
+                            hideBackground = isOverlayHideBackground,
+                            bgColor = bgColor,
+                            textColor = textColor,
+                            cornerRadius = cornerRadius,
+                            padding = padding,
+                            textSize = textSize,
+                            textUp = textUp,
+                            textDown = textDown,
+                            upFirst = upFirst,
+                            direction = direction,
+                            displayMode = displayMode,
+                            alignment = alignment,
+                            meterSpacing = meterSpacing,
+                            speedUnit = speedUnit,
+                            minSpeedUnit = minSpeedUnit,
+                            speedRateUnit = speedRateUnit,
+                            onDrag = { x, y ->
+                                if (!isLocked) {
+                                    params?.let { p ->
+                                        p.x += x.roundToInt()
+                                        p.y += y.roundToInt()
+                                        windowManager.updateViewLayout(composeView, p)
+                                    }
+                                }
+                            },
+                            onDragEnd = {
                                 params?.let { p ->
-                                    p.x += x.roundToInt()
-                                    p.y += y.roundToInt()
-                                    windowManager.updateViewLayout(composeView, p)
+                                    repository.saveOverlayPosition(p.x, p.y)
                                 }
                             }
-                        },
-                        onDragEnd = {
-                            params?.let { p ->
-                                repository.saveOverlayPosition(p.x, p.y)
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
 
-            windowManager.addView(composeView, params)
-            view = composeView
+            try {
+                windowManager.addView(composeView, params)
+                view = composeView
+            } catch (e: Exception) {
+                // For example the Overlay permission was revoked. Reset so a later show() retries.
+                Log.w("OverlayWindow", "addView failed", e)
+                hide()
+            }
         }
-
     }
 
     fun update(speed: NetSpeedData) {
@@ -356,24 +367,84 @@ class OverlayWindow(
     }
 
     fun hide() {
-        if (view != null) {
+        if (!isShowRequested) return
+        isShowRequested = false
+
+        // Cancel a show that has not attached its view yet.
+        showJob?.cancel()
+        showJob = null
+
+        view?.let { attachedView ->
             try {
-                windowManager.removeView(view)
+                windowManager.removeView(attachedView)
             } catch (e: Exception) {
                 Log.w("OverlayWindow", "removeView failed", e)
             }
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-            store.clear()
-            view = null
         }
+        view = null
+        params = null
+
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        store.clear()
     }
 }
 
+/**
+ * Tracks sustained low traffic for the auto-hide option. It is the only composable besides
+ * [OverlayContent] that reads the per-sample speed, so each sample recomposes just these two.
+ *
+ * The Overlay should hide after [LOW_TRAFFIC_HIDE_SAMPLE_COUNT] consecutive samples below
+ * [autoHideThreshold]; one sample at or above it shows the Overlay again.
+ */
+@Composable
+private fun LowTrafficMonitor(
+    speed: () -> NetSpeedData,
+    speedUpdateVersion: () -> Long,
+    displayMode: Int,
+    autoHideThreshold: Long,
+    onShouldHideChanged: (Boolean) -> Unit
+) {
+    val currentSpeed = speed()
+    val currentVersion = speedUpdateVersion()
+    val currentOnShouldHideChanged by rememberUpdatedState(onShouldHideChanged)
+    var lowTrafficSamples by remember { mutableIntStateOf(0) }
+    var lowTrafficDisplayMode by remember { mutableIntStateOf(displayMode) }
+
+    val lowTrafficSpeed = when (displayMode) {
+        1 -> currentSpeed.uploadSpeed
+        2 -> currentSpeed.downloadSpeed
+        else -> currentSpeed.totalSpeed
+    }
+    LaunchedEffect(currentVersion, autoHideThreshold, displayMode) {
+        if (displayMode != lowTrafficDisplayMode) {
+            lowTrafficDisplayMode = displayMode
+            lowTrafficSamples = 0
+        } else {
+            lowTrafficSamples = when {
+                currentVersion == 0L -> 0
+                autoHideThreshold <= 0L -> 0
+                lowTrafficSpeed < autoHideThreshold ->
+                    (lowTrafficSamples + 1)
+                        .coerceAtMost(LOW_TRAFFIC_HIDE_SAMPLE_COUNT)
+
+                else -> 0
+            }
+        }
+        currentOnShouldHideChanged(
+            autoHideThreshold > 0L && lowTrafficSamples >= LOW_TRAFFIC_HIDE_SAMPLE_COUNT
+        )
+    }
+}
+
+/**
+ * @param speed provider that is invoked inside this composable, so a new sample only recomposes
+ * this function instead of the caller.
+ */
 @Composable
 fun OverlayContent(
-    speed: NetSpeedData,
+    speed: () -> NetSpeedData,
     useDefaultColors: Boolean,
     hideBackground: Boolean,
     bgColor: Int,
@@ -394,6 +465,7 @@ fun OverlayContent(
     onDrag: (Float, Float) -> Unit,
     onDragEnd: () -> Unit
 ) {
+    val currentSpeed = speed()
     val textColorValue = if (useDefaultColors) MaterialTheme.colorScheme.onSurface else Color(textColor)
     val textStyle = MaterialTheme.typography.labelSmall.copy(fontSize = textSize.sp)
     Surface(
@@ -414,16 +486,16 @@ fun OverlayContent(
         }
     ) {
         val upSpeed = SpeedFormatter.formatSpeedLine(
-            speed.uploadSpeed, speedUnit, minSpeedUnit, speedRateUnit
+            currentSpeed.uploadSpeed, speedUnit, minSpeedUnit, speedRateUnit
         )
         val downSpeed = SpeedFormatter.formatSpeedLine(
-            speed.downloadSpeed, speedUnit, minSpeedUnit, speedRateUnit
+            currentSpeed.downloadSpeed, speedUnit, minSpeedUnit, speedRateUnit
         )
         val singleText = when (displayMode) {
             1 -> "$textUp$upSpeed"
             2 -> "$textDown$downSpeed"
             3 -> SpeedFormatter.formatSpeedLine(
-                speed.totalSpeed, speedUnit, minSpeedUnit, speedRateUnit
+                currentSpeed.totalSpeed, speedUnit, minSpeedUnit, speedRateUnit
             )
             else -> null
         }

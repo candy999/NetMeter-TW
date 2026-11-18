@@ -6,10 +6,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.TrafficStats
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
 import vip.mystery0.pixel.meter.data.source.ISpeedDataSource
 import vip.mystery0.pixel.meter.data.source.NetworkTrafficData
 import java.util.concurrent.ConcurrentHashMap
@@ -86,35 +82,29 @@ class SpeedDataSource(
         }
     }
 
-    override suspend fun getTrafficData(): NetworkTrafficData = withContext(Dispatchers.Default) {
-        var totalRx = 0L
-        var totalTx = 0L
-
+    /**
+     * Reads the counters of every cached physical interface once.
+     *
+     * Several [Network] objects can share one interface name, so names are de-duplicated before
+     * reading. The reads are sequential and blocking; the caller's sampling loop already runs on
+     * a background Dispatcher, so no extra Dispatcher hop or per-interface coroutine is needed.
+     */
+    override fun getInterfaceTrafficData(): Map<String, NetworkTrafficData> {
         // Read cached interface names directly without querying ConnectivityManager in the
         // sampling loop.
-        val trafficDataList = validInterfaces.values.map { ifaceName ->
-            async {
-                var currentRx = 0L
-                var currentTx = 0L
+        val interfaceNames = validInterfaces.values.toSet()
+        if (interfaceNames.isEmpty()) return emptyMap()
 
-                val rx = withContext(Dispatchers.IO) { TrafficStats.getRxBytes(ifaceName) }
-                val tx = withContext(Dispatchers.IO) { TrafficStats.getTxBytes(ifaceName) }
-
-                if (rx != TrafficStats.UNSUPPORTED.toLong()) {
-                    currentRx += rx
-                }
-                if (tx != TrafficStats.UNSUPPORTED.toLong()) {
-                    currentTx += tx
-                }
-                NetworkTrafficData(currentRx, currentTx)
-            }
-        }.awaitAll()
-
-        trafficDataList.forEach {
-            totalRx += it.rxBytes
-            totalTx += it.txBytes
+        val unsupported = TrafficStats.UNSUPPORTED.toLong()
+        val result = HashMap<String, NetworkTrafficData>(interfaceNames.size)
+        for (ifaceName in interfaceNames) {
+            val rx = TrafficStats.getRxBytes(ifaceName)
+            val tx = TrafficStats.getTxBytes(ifaceName)
+            // Treat the interface as unavailable for this sample so that it gets a fresh
+            // baseline once its counters can be read again.
+            if (rx == unsupported || tx == unsupported) continue
+            result[ifaceName] = NetworkTrafficData(rx, tx)
         }
-
-        return@withContext NetworkTrafficData(totalRx, totalTx)
+        return result
     }
 }

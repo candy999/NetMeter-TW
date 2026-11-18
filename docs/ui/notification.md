@@ -26,6 +26,8 @@ When the speed selected by Status bar icon is below `key_notification_threshold`
 
 A threshold of zero disables low-traffic handling.
 
+The decision uses hysteresis (`LowTrafficHysteresis`) for both modes: the notification enters or leaves the low-traffic state only after three consecutive samples on the other side of the threshold (`SWITCH_SAMPLE_COUNT`). Without it, a speed hovering around the threshold would toggle Live Update promotion (and the Samsung Now Bar extras) every few seconds, making the chip appear and disappear and reordering status-bar icons. The first sample after monitoring starts or resumes, and the first sample after the threshold or Status bar icon setting changes, is applied immediately.
+
 ## 4. Live Update
 
 Android 16+ can enable Live Update:
@@ -58,7 +60,15 @@ The global Rate unit selects Bytes or Bits. Byte units use the existing binary s
 
 ## 6. Update Deduplication
 
-`NotificationHelper` creates a fingerprint containing visible state plus Rate unit and icon mode. The Service calls `NotificationManager.notify()` only when the fingerprint changes, preventing redundant refreshes and status-bar icon reordering.
+For every sample the Service asks `NotificationHelper.createRenderState()` for a `NotificationRenderState`: mode, drawer content text, Live Update status text, Bitmap value and unit text, Rate unit, icon mode, custom color settings, and the value / unit text-size ratios. Computing it builds no `Notification`, `PendingIntent`, or Bitmap.
+
+The Service compares it with the last posted state and calls `NotificationHelper.buildNotification()` and `NotificationManager.notify()` only when a repost is needed:
+
+- Any change other than the drawer content text (everything visible in the status bar or affecting styling) is reposted immediately.
+- A change limited to the drawer content text is reposted at most once every 10 seconds (`CONTENT_TEXT_REPOST_INTERVAL_MS`). The drawer text has B/s precision and changes on almost every sample even on an idle device, so the drawer text can lag by up to 10 seconds while the status-bar output is unchanged.
+- An identical state is never reposted.
+
+This prevents redundant refreshes and status-bar icon reordering. The content `PendingIntent` is created once and reused, and `setWhen` keeps the timestamp taken when the Service started so icon ordering stays stable.
 
 ## 7. Device Validation
 

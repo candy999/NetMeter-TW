@@ -17,10 +17,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import vip.mystery0.pixel.meter.data.model.AppThemeMode
 import vip.mystery0.pixel.meter.data.source.NetSpeedData
+import vip.mystery0.pixel.meter.data.source.NetworkTrafficData
 import vip.mystery0.pixel.meter.data.source.impl.SpeedDataSource
 
 class NetworkRepository(
@@ -184,8 +184,8 @@ class NetworkRepository(
     private val monitoringStateLock = Any()
     private var monitoringGeneration = 0L
 
-    private var lastTotalRxBytes = 0L
-    private var lastTotalTxBytes = 0L
+    // Per-interface counters of the previous sample, keyed by interface name.
+    private var lastInterfaceCounters: Map<String, NetworkTrafficData> = emptyMap()
     private var lastTime = 0L
 
     init {
@@ -665,8 +665,7 @@ class NetworkRepository(
 
         val generation = synchronized(monitoringStateLock) {
             monitoringGeneration += 1
-            lastTotalRxBytes = 0L
-            lastTotalTxBytes = 0L
+            lastInterfaceCounters = emptyMap()
             lastTime = 0L
             monitoringGeneration
         }
@@ -680,40 +679,44 @@ class NetworkRepository(
                 val interval = _samplingInterval.value
                 val startTime = SystemClock.elapsedRealtime()
 
-                // Get Traffic Data
-                val trafficData = dataSource.getTrafficData()
-
+                // The loop runs on Dispatchers.Default, so the blocking counter reads and the
+                // calculation below need no further Dispatcher hop.
+                val interfaceCounters = dataSource.getInterfaceTrafficData()
                 val currentTime = SystemClock.elapsedRealtime()
-                val totalRxBytes = trafficData.rxBytes
-                val totalTxBytes = trafficData.txBytes
 
-                withContext(Dispatchers.Default) {
-                    synchronized(monitoringStateLock) {
-                        if (generation != monitoringGeneration) return@synchronized
+                synchronized(monitoringStateLock) {
+                    if (generation != monitoringGeneration) return@synchronized
 
-                        if (lastTime != 0L) {
-                            val timeDelta = currentTime - lastTime
-                            val rxDelta = totalRxBytes - lastTotalRxBytes
-                            val txDelta = totalTxBytes - lastTotalTxBytes
+                    if (lastTime != 0L) {
+                        val timeDelta = currentTime - lastTime
 
-                            if (timeDelta > 0) {
-                                // Calculate speed
-                                val downloadSpeed = ((rxDelta * 1000) / timeDelta).coerceAtLeast(0)
-                                val uploadSpeed = ((txDelta * 1000) / timeDelta).coerceAtLeast(0)
-
-                                val speed = NetSpeedData(
-                                    downloadSpeed.coerceAtLeast(0),
-                                    uploadSpeed.coerceAtLeast(0)
-                                )
-                                _netSpeed.value = speed
-                                _speedSamples.tryEmit(speed)
+                        if (timeDelta > 0) {
+                            // Only interfaces present in both samples contribute. A newly seen
+                            // interface just sets its baseline (its since-boot counter is not a
+                            // delta), a vanished one is dropped, and a negative delta means the
+                            // counter was reset, so it is ignored instead of masking traffic on
+                            // the other interfaces.
+                            var rxDelta = 0L
+                            var txDelta = 0L
+                            for ((ifaceName, current) in interfaceCounters) {
+                                val previous = lastInterfaceCounters[ifaceName] ?: continue
+                                val ifaceRxDelta = current.rxBytes - previous.rxBytes
+                                val ifaceTxDelta = current.txBytes - previous.txBytes
+                                if (ifaceRxDelta > 0) rxDelta += ifaceRxDelta
+                                if (ifaceTxDelta > 0) txDelta += ifaceTxDelta
                             }
-                        }
 
-                        lastTotalRxBytes = totalRxBytes
-                        lastTotalTxBytes = totalTxBytes
-                        lastTime = currentTime
+                            val speed = NetSpeedData(
+                                (rxDelta * 1000) / timeDelta,
+                                (txDelta * 1000) / timeDelta
+                            )
+                            _netSpeed.value = speed
+                            _speedSamples.tryEmit(speed)
+                        }
                     }
+
+                    lastInterfaceCounters = interfaceCounters
+                    lastTime = currentTime
                 }
 
                 // Delay to achieve the desired interval

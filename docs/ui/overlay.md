@@ -12,6 +12,10 @@ Default flags are `FLAG_NOT_FOCUSABLE`, `FLAG_LAYOUT_IN_SCREEN`, and `FLAG_NOT_T
 
 Showing initializes lifecycle and saved state. Hiding removes the View, dispatches the destroy event, and clears the `ViewModelStore`.
 
+`show()` attaches the View asynchronously after reading the saved position. A synchronous flag set by `show()` and cleared by `hide()` makes `show()` idempotent while the attach is pending, and `hide()` cancels a pending attach, so two windows are never added and none is orphaned. `isActive` exposes the flag so the Service can skip its main-thread hop when the Overlay is disabled and not showing.
+
+The per-sample speed is read only inside `OverlayContent` and `LowTrafficMonitor`, so a new sample recomposes those two composables instead of the root scope that collects all settings.
+
 ## 3. Content
 
 The Overlay formats speed through `SpeedFormatter` and supports four content modes: Upload and download, Upload only, Download only, and Total. Single-direction modes retain their matching configured prefix; Total has no direction prefix. Two-meter order, direction, spacing, and alignment controls remain visible but are disabled when the selected content mode does not use them.
@@ -35,6 +39,8 @@ Portrait Only hides the Overlay in landscape orientation.
 WindowInsets provide status-bar and navigation-bar visibility. If the foreground app hides either system bar, the Overlay can become transparent and non-touchable.
 
 The root `ComposeView` remains attached so it can continue receiving Insets and restore the Overlay when system bars return.
+
+While hidden for any reason (landscape, immersive mode, or sustained low traffic), the speed content is not composed or drawn; a 1 dp transparent placeholder keeps the window non-empty. The window therefore shrinks while hidden and returns to its content size when shown again.
 
 ### Sustained Low Traffic
 

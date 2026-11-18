@@ -44,8 +44,8 @@ Compose UI
 ## 3. Real-Time Speed Data Flow
 
 1. `SpeedDataSource` uses `NetworkCallback` to cache physical networks and their interface names.
-2. `NetworkRepository` calls `getTrafficData()` at the user-selected sampling interval.
-3. The Repository calculates upload and download speeds from byte-counter and time deltas.
+2. `NetworkRepository` calls `getInterfaceTrafficData()` at the user-selected sampling interval.
+3. The Repository calculates upload and download speeds from per-interface byte-counter deltas and the time delta.
 4. Results are published through `StateFlow<NetSpeedData>`.
 5. `NetworkMonitorService` collects the speed state to update notifications, Live Update, and the Overlay.
 6. The main screen observes the same StateFlow to display current values.

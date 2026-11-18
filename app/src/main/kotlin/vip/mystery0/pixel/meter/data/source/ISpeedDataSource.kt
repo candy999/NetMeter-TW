@@ -9,11 +9,20 @@ data class NetSpeedData(
     val totalSpeed: Long = downloadSpeed + uploadSpeed,
 )
 
+/**
+ * Cumulative since-boot counters of a single network interface.
+ */
 data class NetworkTrafficData(
     val rxBytes: Long,
     val txBytes: Long,
 )
 
 interface ISpeedDataSource {
-    suspend fun getTrafficData(): NetworkTrafficData
+    /**
+     * Returns the current counters keyed by distinct physical interface name. Interfaces whose
+     * counters are unavailable are omitted.
+     *
+     * This call performs blocking counter reads and must not run on the main thread.
+     */
+    fun getInterfaceTrafficData(): Map<String, NetworkTrafficData>
 }

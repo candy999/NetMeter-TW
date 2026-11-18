@@ -32,20 +32,23 @@ A basic notification object remains required even when dynamic notification spee
 After startup, the Service:
 
 1. Calls `NetworkRepository.startMonitoring()`.
-2. Collects the `netSpeed` StateFlow.
-3. Updates the Overlay on the main thread.
-4. Builds notifications on a background thread.
-5. Uses a visible-state fingerprint to avoid reposting equivalent notifications.
+2. Collects the `speedSamples` SharedFlow on a background Dispatcher.
+3. Updates the Overlay on the main thread. The main-thread hop is skipped entirely while the Overlay is disabled and no Overlay window exists.
+4. Computes the notification render state for every sample, which is cheap and builds no `Notification`.
+5. Builds and posts a `Notification` only when the render state requires a repost (see [Notifications](../ui/notification.md), Update Deduplication).
+
+`Settings.canDrawOverlays()` is cached and re-checked at most every 30 seconds (`OVERLAY_PERMISSION_RECHECK_INTERVAL_MS`), and additionally on monitoring start and on `ACTION_SCREEN_ON`. A revoked or regranted Overlay permission therefore takes effect within that interval rather than on the very next sample.
 
 It supports a basic static notification, a dynamic Bitmap small icon, and Android 16+ Live Update.
 
-The Overlay update runs independently of notification permission. When `POST_NOTIFICATIONS` is denied, optional `notify()` updates are skipped and the notification fingerprint is invalidated so a later grant refreshes even unchanged content. A permission race while posting is caught without cancelling monitoring. Enabling notification speed without permission must not stop a working Overlay.
+The Overlay update runs independently of notification permission. When `POST_NOTIFICATIONS` is denied, optional `notify()` updates are skipped and the last posted render state is invalidated so a later grant refreshes even unchanged content. A permission race while posting is caught without cancelling monitoring. Enabling notification speed without permission must not stop a working Overlay.
 
 ## 5. Screen-Off Policy
 
-- `ACTION_SCREEN_OFF` starts a two-minute timer.
-- If the screen remains off when the timer expires, Repository sampling stops while the Service stays alive.
-- `ACTION_SCREEN_ON` cancels the timer and resumes sampling if it was paused.
+- `ACTION_SCREEN_OFF` starts a 10-second timer (`SCREEN_OFF_STOP_DELAY_MS`).
+- If the screen remains off when the timer expires, Repository sampling stops while the Service and its Foreground Service notification stay alive. The timer re-checks `PowerManager.isInteractive` before stopping.
+- `onStartCommand()` schedules the same timer when the Service starts while `PowerManager.isInteractive` is false, for example a `START_STICKY` restart or a boot start with the screen off. No `ACTION_SCREEN_OFF` broadcast follows in that case, so sampling would otherwise continue indefinitely.
+- `ACTION_SCREEN_ON` cancels the timer and resumes sampling if it was paused. Resuming resets the speed baseline and the notification low-traffic hysteresis.
 
 This reduces continuous computation while the screen is off and restores speed display when the screen turns on.
 
@@ -78,7 +81,7 @@ On a real Pixel, validate Android 12/12L, Android 13+, and Android 15+ / the cur
 3. Notification only: deny notification permission and verify the notification permission prompt; grant it and verify normal notification speed / Live Update behavior.
 4. Deny Overlay permission while Overlay is selected: verify startup asks for Overlay permission regardless of notification permission. Disable Overlay and verify notification-only startup with notifications granted.
 5. While Overlay is running, toggle notification speed repeatedly with notifications denied. Sampling and Overlay must continue. Grant notification permission and confirm notification display refreshes even when the speed has not changed.
-6. Revoke notifications, stop and restart monitoring, then regrant notifications. Also revoke Overlay permission while running and confirm the window is hidden safely; regrant and confirm it returns on a later sample. Check logs for startup or notification-posting exceptions.
+6. Revoke notifications, stop and restart monitoring, then regrant notifications. Also revoke Overlay permission while running and confirm the window is hidden safely; regrant and confirm it returns on a later sample (the permission is re-checked every 30 seconds and on screen-on). Check logs for startup or notification-posting exceptions.
 7. Stop/start repeatedly, leave and return to the Activity, toggle both Quick Settings Tiles, and test screen-off sleep / screen-on resume. Confirm there is only one Overlay and one Foreground Service notification when notifications are permitted.
 8. Enable auto-start with Overlay permission granted and notifications denied, reboot, and verify the existing boot path on supported devices. Background startup denial must be caught; Overlay permission alone must not be treated as a new API 35+ background-start exemption.
 
