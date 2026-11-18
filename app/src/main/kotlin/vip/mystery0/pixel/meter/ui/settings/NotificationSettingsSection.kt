@@ -285,7 +285,7 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
  */
 @RequiresApi(Build.VERSION_CODES.BAKLAVA)
 private fun openPromotedNotificationSettings(context: Context) {
-    val intent = Intent(Settings.ACTION_MANAGE_APP_PROMOTED_NOTIFICATIONS)
+    val intent = Intent(Settings.ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS)
         .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
     try {
         context.startActivity(intent)

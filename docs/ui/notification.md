@@ -37,7 +37,7 @@ Android 16+ can enable Live Update:
 
 Android decides whether the notification is ultimately promoted.
 
-On Android 16+, Settings shows whether `NotificationManager.canPostPromotedNotifications()` allows Live Updates for the app and opens `Settings.ACTION_MANAGE_APP_PROMOTED_NOTIFICATIONS` (falling back to the app notification settings) so users can re-enable it.
+On Android 16+, Settings shows whether `NotificationManager.canPostPromotedNotifications()` allows Live Updates for the app and opens `Settings.ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS` (falling back to the app notification settings) so users can re-enable it.
 
 ### Samsung One UI
 
