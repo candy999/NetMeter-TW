@@ -99,6 +99,8 @@ See `docs/architecture/localization.md`.
 
 Documentation index: `docs/README.md`
 
+`README.md` is written in Traditional Chinese (Taiwan) for this fork's users; keep `README_EN.md` (English) and `README_CN.md` (Simplified Chinese) in sync with it. Other documentation stays in English.
+
 - Architecture: `docs/architecture/`
 - UI and interaction: `docs/ui/`
 - Product images: `docs/*.png`

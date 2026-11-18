@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> · <a href="README_TW.md">繁體中文（台灣）</a> · 简体中文
+  <a href="README.md">繁體中文（台灣）</a> · <a href="README_EN.md">English</a> · 简体中文
 </p>
 
 NetMeter TW 是 Pixel Tailor CN 开发的 [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMeter) 的分支版本，保留原版准确计速的做法，并增加：
@@ -69,7 +69,7 @@ One UI 用自己的 Now Bar 机制处理常驻通知，会忽略不在三星白�
 ./gradlew lint
 ```
 
-更多说明见 [README.md](README.md) 和 [`docs/README.md`](docs/README.md)。
+更多说明见 [README_EN.md](README_EN.md) 和 [`docs/README.md`](docs/README.md)。
 
 ## 隐私
 
