@@ -12,6 +12,11 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'ci skip')"
+    env:
+      # Only SIGN_KEY_STORE_BASE64 and SIGN_KEY_STORE_PASSWORD are required. The alias defaults to
+      # "netmeter" and the key password to the store password (PKCS12 keystores use one password).
+      SIGN_ALIAS: ${{ secrets.SIGN_KEY_ALIAS || 'netmeter' }}
+      SIGN_KEY_PASS: ${{ secrets.SIGN_KEY_PASSWORD || secrets.SIGN_KEY_STORE_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,11 +36,9 @@ jobs:
         env:
           SIGN_KEY_STORE_BASE64: ${{ secrets.SIGN_KEY_STORE_BASE64 }}
           SIGN_KEY_STORE_PASSWORD: ${{ secrets.SIGN_KEY_STORE_PASSWORD }}
-          SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
-          SIGN_KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
         run: |
           missing=0
-          for name in SIGN_KEY_STORE_BASE64 SIGN_KEY_STORE_PASSWORD SIGN_KEY_ALIAS SIGN_KEY_PASSWORD; do
+          for name in SIGN_KEY_STORE_BASE64 SIGN_KEY_STORE_PASSWORD; do
             if [ -z "${!name}" ]; then
               echo "::error::Repository secret $name is not set."
               missing=1
@@ -55,8 +58,8 @@ jobs:
         env:
           SIGN_KEY_STORE_FILE: ${{ runner.temp }}/release.jks
           SIGN_KEY_STORE_PASSWORD: ${{ secrets.SIGN_KEY_STORE_PASSWORD }}
-          SIGN_KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
-          SIGN_KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
+          SIGN_KEY_ALIAS: ${{ env.SIGN_ALIAS }}
+          SIGN_KEY_PASSWORD: ${{ env.SIGN_KEY_PASS }}
         run: chmod a+x ./gradlew && ./gradlew bundleRelease
 
       - name: Download bundletool
@@ -67,6 +70,8 @@ jobs:
             -o bundletool.jar
 
       - name: Extract Universal APK from AAB
+        env:
+          SIGN_STORE_PASS: ${{ secrets.SIGN_KEY_STORE_PASSWORD }}
         run: |
           mkdir -p apk-output
           java -jar bundletool.jar build-apks \
@@ -74,9 +79,9 @@ jobs:
             --output=apk-output/app.apks \
             --mode=universal \
             --ks="$RUNNER_TEMP/release.jks" \
-            --ks-pass=pass:${{ secrets.SIGN_KEY_STORE_PASSWORD }} \
-            --ks-key-alias=${{ secrets.SIGN_KEY_ALIAS }} \
-            --key-pass=pass:${{ secrets.SIGN_KEY_PASSWORD }}
+            --ks-pass="pass:$SIGN_STORE_PASS" \
+            --ks-key-alias="$SIGN_ALIAS" \
+            --key-pass="pass:$SIGN_KEY_PASS"
           unzip apk-output/app.apks universal.apk -d apk-output/
           mv apk-output/universal.apk "apk-output/PixelMeterTW-${GITHUB_REF_NAME}.apk"
           cp app/build/outputs/bundle/release/app-release.aab \
