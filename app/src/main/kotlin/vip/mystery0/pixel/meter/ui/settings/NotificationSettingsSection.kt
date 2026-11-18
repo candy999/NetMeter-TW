@@ -27,7 +27,9 @@ import me.zhanghai.compose.preference.SliderPreference
 import me.zhanghai.compose.preference.SwitchPreference
 import me.zhanghai.compose.preference.TextFieldPreference
 import vip.mystery0.pixel.meter.R
+import vip.mystery0.pixel.meter.data.repository.DataStoreRepository
 import vip.mystery0.pixel.meter.format.SpeedFormatter
+import vip.mystery0.pixel.meter.service.NotificationHelper
 import vip.mystery0.pixel.meter.service.SamsungCompat
 
 @Composable
@@ -44,6 +46,7 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
     val speedRateUnit by viewModel.speedRateUnit.collectAsState(initial = 0)
     val textSize by viewModel.notificationTextSize.collectAsState(initial = 0.65f)
     val unitSize by viewModel.notificationUnitSize.collectAsState(initial = 0.35f)
+    val isQuiet by viewModel.isNotificationQuiet.collectAsState(initial = false)
 
     PreferenceCategory(title = { Text(stringResource(R.string.settings_category_notification)) })
     SwitchPreference(
@@ -75,18 +78,24 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
                 onClick = { openPromotedNotificationSettings(context) }
             )
             if (SamsungCompat.isSamsung) {
-                Preference(
-                    title = { Text(stringResource(R.string.settings_samsung_now_bar_title)) },
-                    summary = {
-                        Column {
-                            SamsungCompat.oneUiVersionName?.let { Text(it) }
-                            Text(stringResource(R.string.settings_samsung_now_bar_desc))
-                        }
-                    },
-                    onClick = { openAppNotificationSettings(context) }
-                )
+                SamsungNowBarPreferences(viewModel)
             }
         }
+        SwitchPreference(
+            value = isQuiet,
+            onValueChange = { viewModel.setNotificationQuiet(it) },
+            title = { Text(stringResource(R.string.settings_notification_quiet_title)) },
+            summary = { Text(stringResource(R.string.settings_notification_quiet_desc)) }
+        )
+        Preference(
+            title = { Text(stringResource(R.string.settings_notification_channel_settings_title)) },
+            summary = {
+                Text(stringResource(R.string.settings_notification_channel_settings_desc))
+            },
+            onClick = {
+                openNotificationChannelSettings(context, NotificationHelper.channelIdFor(isQuiet))
+            }
+        )
         TextFieldPreference(
             value = textUp,
             onValueChange = { viewModel.setNotificationTextUp(it) },
@@ -261,7 +270,9 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
         )
 
         val useCustomColor by viewModel.notificationUseCustomColor.collectAsState(initial = false)
-        val notificationColor by viewModel.notificationColor.collectAsState(initial = 0)
+        val notificationColor by viewModel.notificationColor.collectAsState(
+            initial = DataStoreRepository.DEFAULT_NOTIFICATION_COLOR
+        )
 
         SwitchPreference(
             value = useCustomColor,
@@ -276,6 +287,86 @@ fun NotificationSettingsSection(viewModel: SettingsViewModel) {
             enabled = useCustomColor,
             onColorSelected = { viewModel.setNotificationColor(it.toArgb()) }
         )
+    }
+}
+
+/**
+ * Samsung-only Live Update preferences: the Now Bar compatibility status and the label mode.
+ * Call only on Samsung devices while Live Update is enabled.
+ */
+@Composable
+private fun SamsungNowBarPreferences(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
+    val developerOptionEnabled by viewModel.samsungLiveNotificationsForAllApps.collectAsState()
+    val nowBarMode by viewModel.samsungNowBarMode.collectAsState(initial = 0)
+
+    Preference(
+        title = { Text(stringResource(R.string.settings_samsung_now_bar_title)) },
+        summary = {
+            Column {
+                SamsungCompat.oneUiVersionName?.let { Text(it) }
+                Text(
+                    stringResource(
+                        when (developerOptionEnabled) {
+                            true -> R.string.settings_samsung_now_bar_dev_option_on
+                            false -> R.string.settings_samsung_now_bar_dev_option_off
+                            null -> R.string.settings_samsung_now_bar_dev_option_unknown
+                        }
+                    )
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.settings_samsung_now_bar_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        onClick = { openDeveloperOptions(context) }
+    )
+
+    val labelAuto = stringResource(R.string.settings_samsung_now_bar_mode_auto)
+    val labelAlways = stringResource(R.string.settings_samsung_now_bar_mode_always)
+    val labelNever = stringResource(R.string.settings_samsung_now_bar_mode_never)
+    val modeValues = listOf(labelAuto, labelAlways, labelNever)
+    val modeLabel = modeValues.getOrElse(nowBarMode) { labelAuto }
+    ListPreference(
+        value = modeLabel,
+        onValueChange = {
+            viewModel.setSamsungNowBarMode(modeValues.indexOf(it).coerceAtLeast(0))
+        },
+        title = { Text(stringResource(R.string.settings_samsung_now_bar_mode_title)) },
+        values = modeValues,
+        summary = { Text(modeLabel) }
+    )
+}
+
+/**
+ * Opens the system Developer options, falling back to the app notification settings when the
+ * screen is unavailable.
+ */
+private fun openDeveloperOptions(context: Context) {
+    try {
+        context.startActivity(Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+    } catch (ignored: ActivityNotFoundException) {
+        openAppNotificationSettings(context)
+    } catch (ignored: SecurityException) {
+        openAppNotificationSettings(context)
+    }
+}
+
+/**
+ * Opens the system settings of one notification channel so the user can minimize or silence it
+ * further, falling back to the app notification settings.
+ */
+private fun openNotificationChannelSettings(context: Context, channelId: String) {
+    val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+        .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        .putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
+    try {
+        context.startActivity(intent)
+    } catch (ignored: ActivityNotFoundException) {
+        openAppNotificationSettings(context)
     }
 }
 

@@ -23,7 +23,16 @@ import kotlin.math.roundToInt
 class NotificationHelper(private val context: Context) {
     companion object {
         const val CHANNEL_ID = "net_monitor_silent"
+
+        /**
+         * Low-importance variant of [CHANNEL_ID]. Channel importance cannot be changed by the app
+         * after creation, so the "Lower notification priority" setting switches channels.
+         */
+        const val CHANNEL_ID_QUIET = "net_monitor_quiet"
         const val NOTIFICATION_ID = 1001
+
+        /** Returns the channel the monitor notification is posted on. */
+        fun channelIdFor(quiet: Boolean): String = if (quiet) CHANNEL_ID_QUIET else CHANNEL_ID
 
         fun createNotificationChannel(context: Context) {
             val notificationManager =
@@ -50,6 +59,21 @@ class NotificationHelper(private val context: Context) {
             }
 
             notificationManager.createNotificationChannel(channel)
+
+            // IMPORTANCE_LOW moves the notification to the silent section of the shade and, on
+            // most devices, hides its status-bar icon. Live Update only forbids IMPORTANCE_MIN.
+            val quietChannel = NotificationChannel(
+                CHANNEL_ID_QUIET,
+                context.getString(R.string.notification_channel_quiet_name),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = context.getString(R.string.notification_channel_quiet_description)
+                setShowBadge(false)
+                setGroup(CHANNEL_ID)
+                setSound(null, null)
+            }
+
+            notificationManager.createNotificationChannel(quietChannel)
         }
     }
 
@@ -68,7 +92,11 @@ class NotificationHelper(private val context: Context) {
         val useCustomColor: Boolean = false,
         val color: Int = 0,
         val textSize: Float = 0f,
-        val unitSize: Float = 0f
+        val unitSize: Float = 0f,
+        /** Post on [CHANNEL_ID_QUIET] instead of [CHANNEL_ID]. */
+        val quietChannel: Boolean = false,
+        /** Attach [SamsungCompat.nowBarExtras]; only ever true in Live Update mode. */
+        val samsungNowBarExtras: Boolean = false
     ) {
         /**
          * Returns true when everything except the notification drawer [contentText] is equal,
@@ -131,6 +159,9 @@ class NotificationHelper(private val context: Context) {
      *
      * @param isLowTraffic whether the icon speed is considered below the notification threshold.
      * The caller applies hysteresis (see [LowTrafficHysteresis]).
+     * @param useQuietChannel whether the notification is posted on the low-importance channel.
+     * @param samsungNowBarExtras whether a Live Update notification should carry the Samsung Now
+     * Bar compatibility extras (see [SamsungCompat.shouldAddNowBarExtras]).
      */
     fun createRenderState(
         speed: NetSpeedData,
@@ -149,7 +180,9 @@ class NotificationHelper(private val context: Context) {
         color: Int = 0,
         speedUnit: Int = 0,
         minSpeedUnit: Int = 0,
-        rateUnit: Int = 0
+        rateUnit: Int = 0,
+        useQuietChannel: Boolean = false,
+        samsungNowBarExtras: Boolean = false
     ): NotificationRenderState {
         // The color only matters when the custom color is enabled.
         val effectiveColor = if (useCustomColor) color else 0
@@ -166,7 +199,8 @@ class NotificationHelper(private val context: Context) {
                 useCustomColor = useCustomColor,
                 color = effectiveColor,
                 textSize = textSize,
-                unitSize = unitSize
+                unitSize = unitSize,
+                quietChannel = useQuietChannel
             )
         }
 
@@ -180,7 +214,8 @@ class NotificationHelper(private val context: Context) {
                     useCustomColor = useCustomColor,
                     color = effectiveColor,
                     textSize = textSize,
-                    unitSize = unitSize
+                    unitSize = unitSize,
+                    quietChannel = useQuietChannel
                 )
             }
             shouldLiveUpdate = false
@@ -221,7 +256,9 @@ class NotificationHelper(private val context: Context) {
                 useCustomColor = useCustomColor,
                 color = effectiveColor,
                 textSize = textSize,
-                unitSize = unitSize
+                unitSize = unitSize,
+                quietChannel = useQuietChannel,
+                samsungNowBarExtras = samsungNowBarExtras
             )
         }
 
@@ -239,7 +276,8 @@ class NotificationHelper(private val context: Context) {
             useCustomColor = useCustomColor,
             color = effectiveColor,
             textSize = textSize,
-            unitSize = unitSize
+            unitSize = unitSize,
+            quietChannel = useQuietChannel
         )
     }
 
@@ -250,7 +288,8 @@ class NotificationHelper(private val context: Context) {
         renderState: NotificationRenderState,
         postedAtMillis: Long
     ): Notification {
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder =
+            NotificationCompat.Builder(context, channelIdFor(renderState.quietChannel))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentIntent(contentIntent)
@@ -271,8 +310,12 @@ class NotificationHelper(private val context: Context) {
                     .setSmallIcon(R.drawable.ic_speed)
                     .setShortCriticalText(requireNotNull(renderState.statusText))
                     .setRequestPromotedOngoing(true)
-                // One UI ignores plain promoted notifications from apps outside its allowlist.
-                SamsungCompat.nowBarExtras(context)?.let(builder::addExtras)
+                // One UI ignores plain promoted notifications from apps outside its allowlist
+                // unless the developer option "Live notifications for all apps" is on. The
+                // extras make One UI label the chip "Gemini Intelligence", so they are optional.
+                if (renderState.samsungNowBarExtras) {
+                    SamsungCompat.nowBarExtras(context)?.let(builder::addExtras)
+                }
             }
 
             "bitmap" -> {

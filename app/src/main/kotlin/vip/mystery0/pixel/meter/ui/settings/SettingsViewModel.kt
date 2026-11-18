@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import vip.mystery0.pixel.meter.data.repository.NetworkRepository
+import vip.mystery0.pixel.meter.service.SamsungCompat
 import android.os.PowerManager as AndroidPowerManager
 
 class SettingsViewModel(
@@ -27,6 +28,12 @@ class SettingsViewModel(
     val isIgnoringBatteryOptimizations = MutableStateFlow(true)
     val canPostPromotedNotifications = MutableStateFlow(true)
     val canEnableAutoStart = MutableStateFlow(false)
+
+    /**
+     * State of the One UI developer option "Live notifications for all apps": true, false, or
+     * null when it cannot be detected.
+     */
+    val samsungLiveNotificationsForAllApps = MutableStateFlow<Boolean?>(null)
 
     val isServiceRunning = repository.isMonitoring
 
@@ -67,6 +74,8 @@ class SettingsViewModel(
     val notificationLowTrafficMode = repository.notificationLowTrafficMode
     val notificationUseCustomColor = repository.notificationUseCustomColor
     val notificationColor = repository.notificationColor
+    val samsungNowBarMode = repository.samsungNowBarMode
+    val isNotificationQuiet = repository.isNotificationQuiet
 
     // General Settings
     val samplingInterval = repository.samplingInterval
@@ -104,6 +113,11 @@ class SettingsViewModel(
                 } else {
                     false
                 }
+            // The user may have just toggled the developer option; drop the cached value so
+            // both this screen and the running Service pick up the change.
+            SamsungCompat.invalidateLiveNotificationsForAllAppsCache()
+            samsungLiveNotificationsForAllApps.value =
+                SamsungCompat.isLiveNotificationsForAllAppsEnabled(application)
             checkAutoStartPermissions()
         }
     }
@@ -168,6 +182,8 @@ class SettingsViewModel(
         repository.setNotificationUseCustomColor(useCustom)
 
     fun setNotificationColor(color: Int) = repository.setNotificationColor(color)
+    fun setSamsungNowBarMode(mode: Int) = repository.setSamsungNowBarMode(mode)
+    fun setNotificationQuiet(quiet: Boolean) = repository.setNotificationQuiet(quiet)
 
     fun setAutoStartServiceEnabled(enabled: Boolean) =
         repository.setAutoStartServiceEnabled(enabled)

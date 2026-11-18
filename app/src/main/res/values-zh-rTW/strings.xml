@@ -143,7 +143,7 @@
     <string name="onboarding_start_setup">開始設定</string>
     <string name="onboarding_setup_later">稍後設定</string>
     <string name="onboarding_display_title">選擇網速顯示方式</string>
-    <string name="onboarding_display_desc">預設不會啟用任何顯示方式。請選擇想要的顯示方式，也可以不啟用任何一種，直接繼續。</string>
+    <string name="onboarding_display_desc">已預先選取建議的顯示方式，你可以自由調整。完成設定前不會啟用任何項目。</string>
     <string name="onboarding_recommended_title">建議設定</string>
     <string name="onboarding_recommended_desc">使用通知網速搭配「即時更新」，享受最接近原生的狀態列體驗。</string>
     <string name="onboarding_recommended_legacy_desc">使用通知網速。「即時更新」需要 Android 16 以上版本。</string>
@@ -183,7 +183,20 @@
     <string name="settings_live_update_permission_granted">已允許。狀態列膠囊是否顯示，仍由系統決定。</string>
     <string name="settings_live_update_permission_denied">已在系統設定中關閉。輕觸即可允許本應用程式使用即時更新。</string>
     <string name="settings_samsung_now_bar_title">三星 Now Bar 相容模式</string>
-    <string name="settings_samsung_now_bar_desc">即時更新已附加三星 Now Bar 專用參數（需要 One UI 8.5 以上版本）。如果狀態列膠囊仍未出現，請輕觸檢查本應用程式的通知設定，並確認 Good Lock QuickStar 的「Ongoing Chip」沒有關閉。</string>
+    <string name="settings_samsung_now_bar_desc">相容模式會附加三星專用參數，讓狀態列膠囊在 One UI 8.5 以上版本出現，但 One UI 會把它標示為「Gemini Intelligence」。若要顯示本應用程式自己的名稱，請在「開發人員選項」中啟用「所有應用程式的即時通知」（Live notifications for all apps），實際名稱可能因 One UI 版本而異。輕觸即可開啟開發人員選項。如果膠囊完全沒有出現，請確認 Good Lock QuickStar 的「Ongoing Chip」沒有關閉。</string>
+    <string name="settings_samsung_now_bar_dev_option_on">開發人員選項「所有應用程式的即時通知」：已啟用</string>
+    <string name="settings_samsung_now_bar_dev_option_off">開發人員選項「所有應用程式的即時通知」：已停用</string>
+    <string name="settings_samsung_now_bar_dev_option_unknown">開發人員選項「所有應用程式的即時通知」：無法偵測</string>
+    <string name="settings_samsung_now_bar_mode_title">Now Bar 標示模式</string>
+    <string name="settings_samsung_now_bar_mode_auto">自動（建議）</string>
+    <string name="settings_samsung_now_bar_mode_always">一律使用相容模式（顯示為 Gemini Intelligence）</string>
+    <string name="settings_samsung_now_bar_mode_never">一律不使用相容模式（需要啟用開發人員選項）</string>
+    <string name="settings_notification_quiet_title">降低通知重要性</string>
+    <string name="settings_notification_quiet_desc">將監測通知移到通知面板底部的靜音區，不再與訊息通知搶位置。大多數裝置不會在狀態列顯示靜音通知的圖示，因此狀態列的網速圖示可能會消失，建議搭配即時更新或浮動視窗使用。Android 規定監測期間必須保留一則通知，所以無法完全移除。</string>
+    <string name="settings_notification_channel_settings_title">通知頻道設定</string>
+    <string name="settings_notification_channel_settings_desc">開啟目前通知頻道的系統設定，可進一步將通知最小化或設為靜音。</string>
+    <string name="notification_channel_quiet_name">網速監測服務（低重要性）</string>
+    <string name="notification_channel_quiet_description">在通知面板底部以靜音方式顯示即時網速</string>
     <string name="settings_samsung_sleeping_apps_title">三星睡眠中的應用程式</string>
     <string name="settings_samsung_sleeping_apps_desc">請在「設定 > 電池 > 背景使用限制 > 永不睡眠的應用程式」中加入本應用程式，避免 One UI 停止監測。輕觸即可查看詳細說明。</string>
 </resources>

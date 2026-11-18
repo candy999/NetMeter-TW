@@ -12,13 +12,15 @@ Pixel Meter uses Jetpack Compose and Material 3 to provide an experience consist
 
 ## 2. Theme
 
-### Dynamic Color
-
-Dynamic Color is enabled by default and derives the Light or Dark `ColorScheme` from the system wallpaper palette.
-
 ### Fixed Color
 
-Users may choose a fixed theme color. Theme code derives a usable Material 3 palette from the selected color.
+Fixed color is the default theme mode (`AppThemeMode.DEFAULT`), with `#0E4686` (`AppThemeMode.DEFAULT_THEME_COLOR`) as the default color. Users may choose another fixed theme color. Theme code derives a usable Material 3 palette from the selected color.
+
+The default applies whenever `key_app_theme_mode` has never been written, so existing users who never changed the theme mode also move from Dynamic Color to the fixed default after upgrading.
+
+### Dynamic Color
+
+Dynamic Color remains selectable and derives the Light or Dark `ColorScheme` from the system wallpaper palette.
 
 ### AMOLED Black
 

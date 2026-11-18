@@ -127,7 +127,7 @@
     <string name="onboarding_start_setup">Iniciar configuração</string>
     <string name="onboarding_setup_later">Configurar mais tarde</string>
     <string name="onboarding_display_title">Escolha como exibir a velocidade</string>
-    <string name="onboarding_display_desc">Nada é ativado por padrão. Escolha os métodos de exibição desejados ou continue sem ativar nenhum.</string>
+    <string name="onboarding_display_desc">O método de exibição recomendado já vem selecionado. Altere a seleção como preferir; nada é ativado até você concluir a configuração.</string>
     <string name="onboarding_recommended_title">Recomendado</string>
     <string name="onboarding_recommended_desc">Use a velocidade na notificação com Live Update para uma experiência mais integrada à barra de status.</string>
     <string name="onboarding_recommended_legacy_desc">Use a velocidade na notificação. O Live Update requer Android 16 ou posterior.</string>
@@ -183,7 +183,20 @@
     <string name="settings_live_update_permission_granted">Permitido. O sistema ainda decide se mostra o chip na barra de status.</string>
     <string name="settings_live_update_permission_denied">Desativado nas configurações do sistema. Toque para permitir Atualizações em Tempo Real para este aplicativo.</string>
     <string name="settings_samsung_now_bar_title">Compatibilidade com a Samsung Now Bar</string>
-    <string name="settings_samsung_now_bar_desc">As Atualizações em Tempo Real incluem extras da Samsung Now Bar (One UI 8.5 ou superior). Se o chip não aparecer na barra de status, toque para verificar as configurações de notificação deste aplicativo e confirme que \"Ongoing Chip\" não está desativado no Good Lock QuickStar.</string>
+    <string name="settings_samsung_now_bar_desc">O modo de compatibilidade adiciona extras específicos da Samsung para que o chip da barra de status apareça na One UI 8.5 ou superior, mas a One UI o identifica como \"Gemini Intelligence\". Para mostrar o nome deste aplicativo, ative Opções do desenvolvedor › \"Live notifications for all apps\" (o nome exato pode variar conforme a versão da One UI). Toque para abrir as Opções do desenvolvedor. Se o chip não aparecer de forma alguma, confirme que \"Ongoing Chip\" não está desativado no Good Lock QuickStar.</string>
+    <string name="settings_samsung_now_bar_dev_option_on">Opção do desenvolvedor \"Live notifications for all apps\": ativada</string>
+    <string name="settings_samsung_now_bar_dev_option_off">Opção do desenvolvedor \"Live notifications for all apps\": desativada</string>
+    <string name="settings_samsung_now_bar_dev_option_unknown">Opção do desenvolvedor \"Live notifications for all apps\": não foi possível detectar</string>
+    <string name="settings_samsung_now_bar_mode_title">Modo de identificação na Now Bar</string>
+    <string name="settings_samsung_now_bar_mode_auto">Automático (recomendado)</string>
+    <string name="settings_samsung_now_bar_mode_always">Sempre usar o modo de compatibilidade (exibido como Gemini Intelligence)</string>
+    <string name="settings_samsung_now_bar_mode_never">Nunca usar o modo de compatibilidade (requer a opção do desenvolvedor)</string>
+    <string name="settings_notification_quiet_title">Reduzir a prioridade da notificação</string>
+    <string name="settings_notification_quiet_desc">Move a notificação de monitoramento para a seção silenciosa na parte inferior da aba de notificações, para que ela pare de competir com as mensagens. Na maioria dos dispositivos, notificações silenciosas não mostram ícone na barra de status, então o ícone Bitmap de velocidade pode desaparecer; use junto com a Atualização em Tempo Real ou a janela flutuante. O Android sempre exige uma notificação de monitoramento, portanto não é possível removê-la por completo.</string>
+    <string name="settings_notification_channel_settings_title">Configurações do canal de notificação</string>
+    <string name="settings_notification_channel_settings_desc">Abre as configurações do sistema do canal de notificação atual para minimizá-lo ou silenciá-lo ainda mais.</string>
+    <string name="notification_channel_quiet_name">Serviço de Monitoramento da Rede (prioridade baixa)</string>
+    <string name="notification_channel_quiet_description">Mostra a velocidade da rede em tempo real, de forma silenciosa, na parte inferior da aba de notificações</string>
     <string name="settings_samsung_sleeping_apps_title">Apps em suspensão da Samsung</string>
     <string name="settings_samsung_sleeping_apps_desc">Adicione este aplicativo em Configurações > Bateria > Limites de uso em segundo plano > Apps que nunca entram em suspensão para que a One UI não interrompa o monitoramento. Toque para ver um guia detalhado.</string>
 </resources>

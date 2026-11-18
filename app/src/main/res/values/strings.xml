@@ -149,7 +149,7 @@
     <string name="onboarding_start_setup">Start setup</string>
     <string name="onboarding_setup_later">Set up later</string>
     <string name="onboarding_display_title">Choose how speed is displayed</string>
-    <string name="onboarding_display_desc">Nothing is enabled by default. Choose the display methods you want, or continue without enabling one.</string>
+    <string name="onboarding_display_desc">The recommended display method is pre-selected. Change the selection as you like; nothing is enabled until you finish setup.</string>
     <string name="onboarding_recommended_title">Recommended</string>
     <string name="onboarding_recommended_desc">Use notification speed with Live Update for the most native status bar experience.</string>
     <string name="onboarding_recommended_legacy_desc">Use notification speed. Live Update requires Android 16 or later.</string>
@@ -192,7 +192,20 @@
     <string name="settings_live_update_permission_granted">Allowed. The system still decides whether to show the status bar chip.</string>
     <string name="settings_live_update_permission_denied">Turned off in system settings. Tap to allow Live Updates for this app.</string>
     <string name="settings_samsung_now_bar_title">Samsung Now Bar compatibility</string>
-    <string name="settings_samsung_now_bar_desc">Live Updates include Samsung Now Bar extras (One UI 8.5 or later). If no status bar chip appears, tap to check this app\'s notification settings and make sure \"Ongoing Chip\" is not turned off in Good Lock QuickStar.</string>
+    <string name="settings_samsung_now_bar_desc">Compatibility mode adds Samsung-specific extras so the status bar chip appears on One UI 8.5 or later, but One UI then labels it \"Gemini Intelligence\". To show this app\'s own name instead, turn on Developer options › \"Live notifications for all apps\" (the exact name can vary by One UI version). Tap to open Developer options. If no chip appears at all, make sure \"Ongoing Chip\" is not turned off in Good Lock QuickStar.</string>
+    <string name="settings_samsung_now_bar_dev_option_on">Developer option \"Live notifications for all apps\": on</string>
+    <string name="settings_samsung_now_bar_dev_option_off">Developer option \"Live notifications for all apps\": off</string>
+    <string name="settings_samsung_now_bar_dev_option_unknown">Developer option \"Live notifications for all apps\": cannot be detected</string>
+    <string name="settings_samsung_now_bar_mode_title">Now Bar label mode</string>
+    <string name="settings_samsung_now_bar_mode_auto">Auto (recommended)</string>
+    <string name="settings_samsung_now_bar_mode_always">Always use compatibility mode (shown as Gemini Intelligence)</string>
+    <string name="settings_samsung_now_bar_mode_never">Never use compatibility mode (requires the developer option)</string>
+    <string name="settings_notification_quiet_title">Lower notification priority</string>
+    <string name="settings_notification_quiet_desc">Moves the monitor notification to the silent section at the bottom of the notification shade so it stops competing with messages. On most devices silent notifications show no status bar icon, so the Bitmap speed icon may disappear; use this together with Live Update or the floating window. Android always requires a monitoring notification, so it cannot be removed entirely.</string>
+    <string name="settings_notification_channel_settings_title">Notification channel settings</string>
+    <string name="settings_notification_channel_settings_desc">Open the system settings of the current notification channel to minimize or silence it further.</string>
+    <string name="notification_channel_quiet_name">Network Monitor Service (low priority)</string>
+    <string name="notification_channel_quiet_description">Shows real-time network speed silently at the bottom of the notification shade</string>
     <string name="settings_samsung_sleeping_apps_title">Samsung sleeping apps</string>
     <string name="settings_samsung_sleeping_apps_desc">Add this app to Settings > Battery > Background usage limits > Never sleeping apps so One UI does not stop monitoring. Tap for a detailed guide.</string>
 </resources>

@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-Onboarding explains VPN-safe traffic counting, lets users choose display methods, and requests only the required permissions. It must not enable a display method without confirmation.
+Onboarding explains VPN-safe traffic counting, lets users choose display methods, and requests only the required permissions. It pre-selects the recommended display method, but must not enable any display method until the user confirms by finishing the wizard.
 
 ## 2. Display Rules
 
@@ -19,7 +19,13 @@ Explain the app's purpose and how reading physical interfaces avoids counting VP
 
 ### Step 2: Display Methods
 
-All options are disabled by default: notification speed, Live Update, and Overlay.
+The recommended configuration is pre-selected when the step opens:
+
+- Android 16+ (`liveUpdateSupported`): notification speed and Live Update are on.
+- Earlier versions: notification speed is on; Live Update stays off and cannot be changed.
+- Overlay is always off by default.
+
+The user can untick any option before finishing. The pre-selection only lives in Compose state: nothing is persisted or started until the user finishes Step 3. Skip and "Set up later" still enable no display method.
 
 Recommended configuration:
 
@@ -30,7 +36,7 @@ Disabling notification speed also disables Live Update. Live Update cannot be ch
 
 ### Step 3: Permissions and Completion
 
-Overlay requires permission to draw over other apps, independently of notification permission. Only selected notification speed / Live Update shows the notification permission card. With an authorized Overlay, "Finish and start" stays available when notification permission is denied, including when both display methods are selected; explanatory text says notifications will not be shown. Notification-only configuration still requires notification permission on Android 13+.
+Overlay requires permission to draw over other apps, independently of notification permission. Only selected notification speed / Live Update shows the notification permission card; because notification speed is pre-selected, the card is shown by default and asks for `POST_NOTIFICATIONS` on Android 13+. With an authorized Overlay, "Finish and start" stays available when notification permission is denied, including when both display methods are selected; explanatory text says notifications will not be shown. Notification-only configuration still requires notification permission on Android 13+.
 
 - Display startup requirements satisfied: show "Finish and start" (including Overlay-only).
 - No display method selected: show "Finish" and do not start the Service.

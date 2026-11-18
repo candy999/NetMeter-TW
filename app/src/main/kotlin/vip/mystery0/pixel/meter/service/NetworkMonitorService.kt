@@ -155,7 +155,13 @@ class NetworkMonitorService : Service() {
         color = repository.notificationColor.value,
         speedUnit = repository.speedUnit.value,
         minSpeedUnit = repository.minSpeedUnit.value,
-        rateUnit = repository.speedRateUnit.value
+        rateUnit = repository.speedRateUnit.value,
+        useQuietChannel = repository.isNotificationQuiet.value,
+        // Only Live Update notifications carry the extras, so skip the lookup otherwise.
+        samsungNowBarExtras = isLiveUpdate && SamsungCompat.shouldAddNowBarExtras(
+            this,
+            repository.samsungNowBarMode.value
+        )
     )
 
     private fun startMonitoring() {
@@ -163,6 +169,8 @@ class NetworkMonitorService : Service() {
 
         // Re-check the Overlay permission on the first sample after a (re)start.
         isOverlayPermissionChecked = false
+        // The One UI developer option may have changed while monitoring was stopped.
+        SamsungCompat.invalidateLiveNotificationsForAllAppsCache()
 
         // Start Repository Monitoring
         repository.startMonitoring()
@@ -300,6 +308,7 @@ class NetworkMonitorService : Service() {
                     stopMonitoringJob?.cancel()
                     // The permission may have changed while the screen was off.
                     isOverlayPermissionChecked = false
+                    SamsungCompat.invalidateLiveNotificationsForAllAppsCache()
                     if (!repository.isMonitoring.value) {
                         Log.d(TAG, "Screen ON: Resuming monitoring")
                         startMonitoring()

@@ -10,7 +10,7 @@ Pixel Meter uses Preferences DataStore named `pixel_pulse_preferences`.
 
 When `key_onboarding_shown` is absent:
 
-- Empty Preferences indicate a new installation: show Onboarding and disable notification speed by default.
+- Empty Preferences indicate a new installation: show Onboarding and keep notification speed disabled until Onboarding is finished. Onboarding pre-selects notification speed (plus Live Update on Android 16+), but nothing is written until the user finishes it.
 - Non-empty Preferences indicate an upgrade: do not show Onboarding automatically, and preserve the historical notification default.
 
 When a new user skips Onboarding, write `key_onboarding_shown=true`. If DataStore is still empty, also write `key_notification_enabled=false`.
@@ -33,8 +33,8 @@ When a new user skips Onboarding, write `key_onboarding_shown=true`. If DataStor
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `key_app_theme_mode` | Int | Dynamic | Dynamic Color or fixed theme color |
-| `key_app_theme_color` | Int | `DEFAULT_THEME_COLOR` | Fixed theme color |
+| `key_app_theme_mode` | Int | 1 (Fixed) | 0 Dynamic Color; 1 fixed theme color |
+| `key_app_theme_color` | Int | `DEFAULT_THEME_COLOR` (`0xFF0E4686`) | Fixed theme color |
 | `key_app_theme_use_amoled_black` | Boolean | false | Use black surfaces in fixed-color dark mode |
 
 ### Notifications and Live Update
@@ -53,7 +53,9 @@ When a new user skips Onboarding, write `key_onboarding_shown=true`. If DataStor
 | `key_notification_threshold` | Long | 0 | Low-traffic threshold in bytes per second; 0 disables it |
 | `key_notification_low_traffic_mode` | Int | 0 | 0 static icon; 1 dynamic low-speed value |
 | `key_notification_use_custom_color` | Boolean | false | Apply a notification accent color |
-| `key_notification_color` | Int | 0 | Notification accent color |
+| `key_notification_color` | Int | `DEFAULT_NOTIFICATION_COLOR` (`0xFF0E4686`) | Notification accent color; only applied when the custom color is enabled |
+| `key_notification_quiet` | Boolean | false | Post the monitor notification on the `IMPORTANCE_LOW` channel `net_monitor_quiet` instead of `net_monitor_silent` |
+| `key_samsung_now_bar_mode` | Int | 0 | Samsung Now Bar extras: 0 Auto (skip them when the One UI developer option "Live notifications for all apps" is detected as on); 1 always add; 2 never add |
 
 ### Overlay
 

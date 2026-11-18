@@ -77,10 +77,18 @@ class DataStoreRepository(private val dataStore: DataStore<Preferences>) {
         val KEY_OVERLAY_AUTO_HIDE_THRESHOLD =
             longPreferencesKey("key_overlay_auto_hide_threshold")
         val KEY_ONBOARDING_SHOWN = booleanPreferencesKey("key_onboarding_shown")
+        val KEY_SAMSUNG_NOW_BAR_MODE = intPreferencesKey("key_samsung_now_bar_mode")
+        val KEY_NOTIFICATION_QUIET = booleanPreferencesKey("key_notification_quiet")
+
+        /** Accent color offered when the user first enables the custom notification color. */
+        val DEFAULT_NOTIFICATION_COLOR: Int = AppThemeMode.DEFAULT_THEME_COLOR
 
         fun normalizeSpeedRateUnit(value: Int): Int = if (value == 1) 1 else 0
         fun normalizeOverlayDisplayMode(value: Int): Int = if (value in 0..3) value else 0
         fun normalizeNotificationIconMode(value: Int): Int = if (value in 0..2) value else 0
+
+        /** 0: Auto, 1: always add the compatibility extras, 2: never add them. */
+        fun normalizeSamsungNowBarMode(value: Int): Int = if (value in 0..2) value else 0
     }
 
     val isOnboardingShown: Flow<Boolean> = dataStore.data
@@ -247,7 +255,17 @@ class DataStoreRepository(private val dataStore: DataStore<Preferences>) {
 
     val notificationColor: Flow<Int> = dataStore.data
         .map { preferences ->
-            preferences[KEY_NOTIFICATION_COLOR] ?: 0
+            preferences[KEY_NOTIFICATION_COLOR] ?: DEFAULT_NOTIFICATION_COLOR
+        }
+
+    val samsungNowBarMode: Flow<Int> = dataStore.data
+        .map { preferences ->
+            normalizeSamsungNowBarMode(preferences[KEY_SAMSUNG_NOW_BAR_MODE] ?: 0)
+        }
+
+    val isNotificationQuiet: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_NOTIFICATION_QUIET] ?: false
         }
 
     val overlayAutoHideThreshold: Flow<Long> = dataStore.data
@@ -257,7 +275,7 @@ class DataStoreRepository(private val dataStore: DataStore<Preferences>) {
 
     val appThemeMode: Flow<Int> = dataStore.data
         .map { preferences ->
-            preferences[KEY_APP_THEME_MODE] ?: AppThemeMode.Dynamic.value
+            preferences[KEY_APP_THEME_MODE] ?: AppThemeMode.DEFAULT.value
         }
 
     val appThemeColor: Flow<Int> = dataStore.data
@@ -476,6 +494,18 @@ class DataStoreRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setNotificationColor(color: Int) {
         dataStore.edit { preferences ->
             preferences[KEY_NOTIFICATION_COLOR] = color
+        }
+    }
+
+    suspend fun setSamsungNowBarMode(mode: Int) {
+        dataStore.edit { preferences ->
+            preferences[KEY_SAMSUNG_NOW_BAR_MODE] = normalizeSamsungNowBarMode(mode)
+        }
+    }
+
+    suspend fun setNotificationQuiet(quiet: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_NOTIFICATION_QUIET] = quiet
         }
     }
 

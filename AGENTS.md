@@ -73,8 +73,8 @@ MainViewModel / SettingsViewModel
 ## 6. UI and Android Requirements
 
 - Use Jetpack Compose, Material 3, Material You, and edge-to-edge layouts.
-- Dynamic Color is the default; fixed colors and AMOLED Black are supported.
-- New installations enable no display method until the user selects one in Onboarding.
+- Fixed color `#0E4686` is the default theme; Dynamic Color, other fixed colors, and AMOLED Black are supported.
+- New installations enable no display method until the user finishes Onboarding. Onboarding pre-selects notification speed (plus Live Update on Android 16+); the selection is applied only when the user finishes the wizard, and skipping enables nothing.
 - A base Foreground Service notification is always required while monitoring.
 - Live Update is Android 16+ only.
 - Overlay uses `TYPE_APPLICATION_OVERLAY` and requires `SYSTEM_ALERT_WINDOW`.

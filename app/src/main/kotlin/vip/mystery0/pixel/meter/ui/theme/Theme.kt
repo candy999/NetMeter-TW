@@ -74,7 +74,7 @@ private val FixedDarkColorScheme = darkColorScheme(
 @Composable
 fun PixelPulseTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    themeMode: Int = AppThemeMode.Dynamic.value,
+    themeMode: Int = AppThemeMode.DEFAULT.value,
     themeColor: Int = AppThemeMode.DEFAULT_THEME_COLOR,
     useAmoledBlack: Boolean = false,
     content: @Composable () -> Unit

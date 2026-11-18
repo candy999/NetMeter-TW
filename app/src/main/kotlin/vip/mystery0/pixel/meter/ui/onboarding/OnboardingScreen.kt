@@ -49,8 +49,10 @@ fun OnboardingScreen(
     ) -> Unit
 ) {
     var step by remember { mutableIntStateOf(0) }
-    var notificationEnabled by remember { mutableStateOf(false) }
-    var liveUpdateEnabled by remember { mutableStateOf(false) }
+    // Notification speed (and Live Update where supported) is pre-selected. Nothing is persisted
+    // until the user finishes the wizard; skipping still enables no display method.
+    var notificationEnabled by remember { mutableStateOf(true) }
+    var liveUpdateEnabled by remember { mutableStateOf(liveUpdateSupported) }
     var overlayEnabled by remember { mutableStateOf(false) }
 
     Scaffold(

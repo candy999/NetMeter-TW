@@ -143,7 +143,7 @@
     <string name="onboarding_start_setup">Начать настройку</string>
     <string name="onboarding_setup_later">Настроить позже</string>
     <string name="onboarding_display_title">Выберите способ отображения скорости</string>
-    <string name="onboarding_display_desc">По умолчанию ничего не включено. Выберите нужные способы отображения или продолжите, не включая их.</string>
+    <string name="onboarding_display_desc">Рекомендуемый способ отображения уже выбран. Измените выбор по своему усмотрению; ничего не включается, пока вы не завершите настройку.</string>
     <string name="onboarding_recommended_title">Рекомендуется</string>
     <string name="onboarding_recommended_desc">Используйте отображение скорости в уведомлении с Live Update для наиболее естественной интеграции со строкой состояния.</string>
     <string name="onboarding_recommended_legacy_desc">Используйте отображение скорости в уведомлении. Для Live Update требуется Android 16 или новее.</string>
@@ -183,7 +183,20 @@
     <string name="settings_live_update_permission_granted">Разрешено. Показывать ли индикатор в строке состояния, по-прежнему решает система.</string>
     <string name="settings_live_update_permission_denied">Отключено в настройках системы. Нажмите, чтобы разрешить обновления в реальном времени для этого приложения.</string>
     <string name="settings_samsung_now_bar_title">Совместимость с Samsung Now Bar</string>
-    <string name="settings_samsung_now_bar_desc">Обновления в реальном времени содержат дополнительные параметры Samsung Now Bar (One UI 8.5 или новее). Если индикатор в строке состояния не появляется, нажмите, чтобы проверить настройки уведомлений приложения, и убедитесь, что «Ongoing Chip» не отключён в Good Lock QuickStar.</string>
+    <string name="settings_samsung_now_bar_desc">Режим совместимости добавляет специальные параметры Samsung, чтобы индикатор в строке состояния появлялся в One UI 8.5 и новее, но One UI подписывает его как «Gemini Intelligence». Чтобы отображалось название этого приложения, включите «Параметры разработчика» › «Live notifications for all apps» (точное название зависит от версии One UI). Нажмите, чтобы открыть параметры разработчика. Если индикатор не появляется вообще, убедитесь, что «Ongoing Chip» не отключён в Good Lock QuickStar.</string>
+    <string name="settings_samsung_now_bar_dev_option_on">Параметр разработчика «Live notifications for all apps»: включён</string>
+    <string name="settings_samsung_now_bar_dev_option_off">Параметр разработчика «Live notifications for all apps»: выключен</string>
+    <string name="settings_samsung_now_bar_dev_option_unknown">Параметр разработчика «Live notifications for all apps»: не удалось определить</string>
+    <string name="settings_samsung_now_bar_mode_title">Режим подписи в Now Bar</string>
+    <string name="settings_samsung_now_bar_mode_auto">Авто (рекомендуется)</string>
+    <string name="settings_samsung_now_bar_mode_always">Всегда использовать режим совместимости (отображается как Gemini Intelligence)</string>
+    <string name="settings_samsung_now_bar_mode_never">Никогда не использовать режим совместимости (требуется параметр разработчика)</string>
+    <string name="settings_notification_quiet_title">Понизить приоритет уведомления</string>
+    <string name="settings_notification_quiet_desc">Перемещает уведомление мониторинга в раздел беззвучных уведомлений внизу шторки, чтобы оно не конкурировало с сообщениями. На большинстве устройств беззвучные уведомления не показывают значок в строке состояния, поэтому Bitmap-значок скорости может исчезнуть; используйте вместе с обновлением в реальном времени или плавающим окном. Android всегда требует уведомление во время мониторинга, поэтому убрать его полностью нельзя.</string>
+    <string name="settings_notification_channel_settings_title">Настройки канала уведомлений</string>
+    <string name="settings_notification_channel_settings_desc">Открыть системные настройки текущего канала уведомлений, чтобы ещё сильнее свернуть или заглушить его.</string>
+    <string name="notification_channel_quiet_name">Служба мониторинга сети (низкий приоритет)</string>
+    <string name="notification_channel_quiet_description">Беззвучно показывает скорость сети в реальном времени внизу шторки уведомлений</string>
     <string name="settings_samsung_sleeping_apps_title">Спящие приложения Samsung</string>
     <string name="settings_samsung_sleeping_apps_desc">Добавьте это приложение в «Настройки > Батарея > Ограничения фонового использования > Неспящие приложения», чтобы One UI не останавливал мониторинг. Нажмите, чтобы открыть подробное руководство.</string>
 </resources>

@@ -28,7 +28,7 @@ fun GeneralSettingsSection(viewModel: SettingsViewModel) {
     val speedRateUnit by viewModel.speedRateUnit.collectAsState(initial = 0)
     val minSpeedUnit by viewModel.minSpeedUnit.collectAsState(initial = 0)
     val appThemeMode by viewModel.appThemeMode.collectAsState(
-        initial = AppThemeMode.Dynamic.value
+        initial = AppThemeMode.DEFAULT.value
     )
     val appThemeColor by viewModel.appThemeColor.collectAsState(
         initial = AppThemeMode.DEFAULT_THEME_COLOR

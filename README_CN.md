@@ -46,6 +46,8 @@ One UI 用自己的 Now Bar 机制处理常驻通知，会忽略不在三星白�
 2. 确认「实时更新权限」显示「已允许」；否则点击它打开系统设置。
 3. 如果安装了 Good Lock 的 QuickStar，确认「Ongoing Chip」未关闭。
 
+附加这些参数后，One UI 会把胶囊和 Now Bar 卡片标注为「Gemini Intelligence」。要显示本应用自己的名称，请在「开发者选项」中启用「所有应用的实时通知」（Live notifications for all apps），应用检测到后会自动停止附加参数；也可以在「设置 › 通知 › Now Bar 标识模式」手动指定。
+
 为避免监控被系统停止，请将应用加入「设置 › 电池 › 后台使用限制 › 永不休眠的应用」。
 
 三星的这些参数并未公开，未来的 One UI 版本可能失效；失效时应用会回退到标准 Android 行为。

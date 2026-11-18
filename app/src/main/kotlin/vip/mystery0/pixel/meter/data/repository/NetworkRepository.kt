@@ -148,8 +148,15 @@ class NetworkRepository(
     private val _notificationUseCustomColor = MutableStateFlow(false)
     val notificationUseCustomColor: StateFlow<Boolean> = _notificationUseCustomColor.asStateFlow()
 
-    private val _notificationColor = MutableStateFlow(0)
+    private val _notificationColor =
+        MutableStateFlow(DataStoreRepository.DEFAULT_NOTIFICATION_COLOR)
     val notificationColor: StateFlow<Int> = _notificationColor.asStateFlow()
+
+    private val _samsungNowBarMode = MutableStateFlow(0)
+    val samsungNowBarMode: StateFlow<Int> = _samsungNowBarMode.asStateFlow()
+
+    private val _isNotificationQuiet = MutableStateFlow(false)
+    val isNotificationQuiet: StateFlow<Boolean> = _isNotificationQuiet.asStateFlow()
 
     private val _isHideFromRecents = MutableStateFlow(false)
     val isHideFromRecents: StateFlow<Boolean> = _isHideFromRecents.asStateFlow()
@@ -169,7 +176,7 @@ class NetworkRepository(
     private val _minSpeedUnit = MutableStateFlow(0)
     val minSpeedUnit: StateFlow<Int> = _minSpeedUnit.asStateFlow()
 
-    private val _appThemeMode = MutableStateFlow(AppThemeMode.Dynamic.value)
+    private val _appThemeMode = MutableStateFlow(AppThemeMode.DEFAULT.value)
     val appThemeMode: StateFlow<Int> = _appThemeMode.asStateFlow()
 
     private val _appThemeColor = MutableStateFlow(AppThemeMode.DEFAULT_THEME_COLOR)
@@ -260,14 +267,21 @@ class NetworkRepository(
                     prefs[DataStoreRepository.KEY_NOTIFICATION_LOW_TRAFFIC_MODE] ?: 0
                 _notificationUseCustomColor.value =
                     prefs[DataStoreRepository.KEY_NOTIFICATION_USE_CUSTOM_COLOR] ?: false
-                _notificationColor.value = prefs[DataStoreRepository.KEY_NOTIFICATION_COLOR] ?: 0
+                _notificationColor.value =
+                    prefs[DataStoreRepository.KEY_NOTIFICATION_COLOR]
+                        ?: DataStoreRepository.DEFAULT_NOTIFICATION_COLOR
+                _samsungNowBarMode.value = DataStoreRepository.normalizeSamsungNowBarMode(
+                    prefs[DataStoreRepository.KEY_SAMSUNG_NOW_BAR_MODE] ?: 0
+                )
+                _isNotificationQuiet.value =
+                    prefs[DataStoreRepository.KEY_NOTIFICATION_QUIET] ?: false
                 _speedUnit.value = prefs[DataStoreRepository.KEY_SPEED_UNIT] ?: 0
                 _speedRateUnit.value = DataStoreRepository.normalizeSpeedRateUnit(
                     prefs[DataStoreRepository.KEY_SPEED_RATE_UNIT] ?: 0
                 )
                 _minSpeedUnit.value = prefs[DataStoreRepository.KEY_MIN_SPEED_UNIT] ?: 0
                 _appThemeMode.value =
-                    prefs[DataStoreRepository.KEY_APP_THEME_MODE] ?: AppThemeMode.Dynamic.value
+                    prefs[DataStoreRepository.KEY_APP_THEME_MODE] ?: AppThemeMode.DEFAULT.value
                 _appThemeColor.value =
                     prefs[DataStoreRepository.KEY_APP_THEME_COLOR]
                         ?: AppThemeMode.DEFAULT_THEME_COLOR
@@ -422,6 +436,16 @@ class NetworkRepository(
         scope.launch {
             dataStoreRepository.notificationColor.collect {
                 _notificationColor.value = it
+            }
+        }
+        scope.launch {
+            dataStoreRepository.samsungNowBarMode.collect {
+                _samsungNowBarMode.value = it
+            }
+        }
+        scope.launch {
+            dataStoreRepository.isNotificationQuiet.collect {
+                _isNotificationQuiet.value = it
             }
         }
         scope.launch {
@@ -621,6 +645,14 @@ class NetworkRepository(
 
     fun setNotificationColor(color: Int) {
         scope.launch { dataStoreRepository.setNotificationColor(color) }
+    }
+
+    fun setSamsungNowBarMode(mode: Int) {
+        scope.launch { dataStoreRepository.setSamsungNowBarMode(mode) }
+    }
+
+    fun setNotificationQuiet(quiet: Boolean) {
+        scope.launch { dataStoreRepository.setNotificationQuiet(quiet) }
     }
 
     fun setSpeedUnit(unit: Int) {

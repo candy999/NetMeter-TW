@@ -44,9 +44,10 @@ The app is not on Google Play. Release builds and Actions test builds may use di
   - A dynamic Bitmap small icon showing total, upload, or download speed.
   - Custom prefixes, icon text sizes, notification color, and a low-traffic threshold.
 - **Live Update (Android 16+)**: a status bar chip through Android's promoted ongoing notifications. On Samsung, it also appears in the Now Bar; see [Samsung One UI](#samsung-one-ui).
+- **Lower notification priority**: moves the monitor notification to the silent section so it does not compete with messages; best paired with the Live Update chip.
 - **Floating window**: a draggable Overlay with horizontal or vertical layout, colors, corner radius, padding, and alignment. It can lock its position, and can hide in landscape, in immersive apps, or while traffic stays low.
 - **Quick Settings Tiles** to toggle notification speed and the floating window.
-- **Material You**: Dynamic Color, a fixed theme color, and optional AMOLED black.
+- **Material You**: a fixed theme color (default `#0E4686`), Dynamic Color, and optional AMOLED black.
 - **Units**: bytes/s, or decimal SI bits/s.
 - **Setup wizard** that asks only for the permissions the chosen display needs.
 - **Cloudflare speed test** shortcut.
@@ -54,7 +55,7 @@ The app is not on Google Play. Release builds and Actions test builds may use di
 
 ## Samsung One UI
 
-One UI handles ongoing notifications through its own Now Bar pipeline, which ignores standard Android Live Updates from apps outside Samsung's allowlist. On Samsung devices, Pixel Meter TW adds the Now Bar extras that community research found Samsung SystemUI honors.
+One UI handles ongoing notifications through its own Now Bar pipeline, which ignores standard Android Live Updates from apps outside Samsung's allowlist. On Samsung devices, Pixel Meter TW adds the Now Bar extras that community research found Samsung SystemUI honors. One UI labels a chip posted with these extras "Gemini Intelligence". To show the app's own name, turn on **Developer options › Live notifications for all apps** (the name can vary by One UI version); the app then skips the extras automatically. **Settings › Notifications › Now Bar label mode** can force either behavior.
 
 | One UI | Live Update chip / Now Bar |
 |---|---|
