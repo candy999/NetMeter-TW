@@ -31,6 +31,12 @@ class NotificationHelper(private val context: Context) {
         const val CHANNEL_ID_QUIET = "net_monitor_quiet"
         const val NOTIFICATION_ID = 1001
 
+        /**
+         * Foreground Service notification used while monitoring is paused on the lock screen.
+         * A separate ID lets the live (possibly promoted) notification be cancelled outright.
+         */
+        const val PAUSED_NOTIFICATION_ID = 1002
+
         /** Returns the channel the monitor notification is posted on. */
         fun channelIdFor(quiet: Boolean): String = if (quiet) CHANNEL_ID_QUIET else CHANNEL_ID
 

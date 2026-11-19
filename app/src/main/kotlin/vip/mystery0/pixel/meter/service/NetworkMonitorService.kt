@@ -2,6 +2,7 @@ package vip.mystery0.pixel.meter.service
 
 import android.Manifest
 import android.app.KeyguardManager
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -20,6 +21,8 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -39,6 +42,13 @@ class NetworkMonitorService : Service() {
 
         /** Settings.canDrawOverlays() is re-checked at most once per this interval. */
         private const val OVERLAY_PERMISSION_RECHECK_INTERVAL_MS = 30_000L
+
+        /**
+         * While the screen is on but locked, the keyguard state is polled at this interval as a
+         * fallback in case ACTION_USER_PRESENT is not delivered or arrives before the keyguard
+         * reports itself unlocked.
+         */
+        private const val KEYGUARD_POLL_INTERVAL_MS = 1_000L
     }
 
     private val repository: NetworkRepository by inject()
@@ -69,6 +79,9 @@ class NetworkMonitorService : Service() {
     @Volatile
     private var isPausedForLock = false
     private val notificationLock = Any()
+
+    // Polls the keyguard while the lock screen is showing. Only touched on the main thread.
+    private var keyguardWatchJob: Job? = null
 
     // Cached Settings.canDrawOverlays() result. Only touched on the main thread.
     private var isOverlayPermissionGranted = false
@@ -107,36 +120,29 @@ class NetworkMonitorService : Service() {
 
         try {
             // This notification is mandatory even when POST_NOTIFICATIONS is denied.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                startForeground(
-                    NotificationHelper.NOTIFICATION_ID,
-                    initialNotification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
-                )
-            } else {
-                startForeground(
-                    NotificationHelper.NOTIFICATION_ID,
-                    initialNotification,
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                )
-            }
+            startForegroundCompat(NotificationHelper.NOTIFICATION_ID, initialNotification)
         } catch (e: Exception) {
             Log.e(TAG, "onStartCommand: start foreground error", e)
             stopSelf()
             return START_NOT_STICKY
         }
+        // A previous pause may have left the paused notification behind.
+        notificationManager.cancel(NotificationHelper.PAUSED_NOTIFICATION_ID)
 
-        lastPostedRenderState = initialState
-        lastNotificationPostElapsedMs = SystemClock.elapsedRealtime()
+        synchronized(notificationLock) {
+            isPausedForLock = false
+            lastPostedRenderState = initialState
+            lastNotificationPostElapsedMs = SystemClock.elapsedRealtime()
+        }
 
         if (isDeviceInUse()) {
-            isPausedForLock = false
             startMonitoring()
         } else {
             // A START_STICKY restart or boot start can happen while the screen is off or locked,
             // in which case no ACTION_SCREEN_OFF broadcast will follow.
             Log.d(TAG, "Started while the device is locked: staying paused until unlock")
             pauseForLock()
+            if (powerManager.isInteractive) startKeyguardWatch()
         }
         return START_STICKY
     }
@@ -279,7 +285,7 @@ class NetworkMonitorService : Service() {
 
     private fun postNotification(
         renderState: NotificationHelper.NotificationRenderState,
-        notification: android.app.Notification
+        notification: Notification
     ) {
         try {
             notificationManager.notify(NotificationHelper.NOTIFICATION_ID, notification)
@@ -304,14 +310,24 @@ class NetworkMonitorService : Service() {
         return elapsed >= CONTENT_TEXT_REPOST_INTERVAL_MS
     }
 
+    /** Starts or updates the Foreground Service notification with the correct service type. */
+    private fun startForegroundCompat(id: Int, notification: Notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        }
+    }
+
     /** True when the screen is on and the keyguard is dismissed. */
     private fun isDeviceInUse(): Boolean =
         powerManager.isInteractive && !keyguardManager.isKeyguardLocked
 
     /**
-     * Stops sampling and replaces the notification with a static, non-promoted one, so nothing is
-     * updated while nobody can see it and the monitor does not occupy the lock screen Now Bar.
-     * Monitoring resumes on unlock (see [resumeIfInUse]).
+     * Stops sampling and moves the Foreground Service onto a separate, static paused notification,
+     * then cancels the live notification. Cancelling (rather than updating it in place) makes the
+     * system drop the Live Update chip and One UI drop the Now Bar card, which may otherwise keep
+     * the entry for the same notification. Must be called on the main thread.
      */
     private fun pauseForLock() {
         serviceJob?.cancel()
@@ -323,37 +339,78 @@ class NetworkMonitorService : Service() {
             useCustomColor = repository.notificationUseCustomColor.value,
             color = repository.notificationColor.value
         )
+        val pausedNotification =
+            notificationHelper.buildNotification(pausedState, notificationPostedAtMillis)
         synchronized(notificationLock) {
+            if (isPausedForLock) return
+            // From here on, in-flight samples cannot post the live notification again.
             isPausedForLock = true
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // The system keeps showing the Foreground Service notification it already has.
+            try {
+                // Updating an already-foreground service is allowed from the background.
+                startForegroundCompat(NotificationHelper.PAUSED_NOTIFICATION_ID, pausedNotification)
+                notificationManager.cancel(NotificationHelper.NOTIFICATION_ID)
                 lastPostedRenderState = null
-                return
+            } catch (e: Exception) {
+                // Fall back to replacing the live notification in place.
+                Log.w(TAG, "pauseForLock: could not switch the foreground notification", e)
+                postNotification(pausedState, pausedNotification)
             }
-            if (pausedState == lastPostedRenderState) return
-            postNotification(
-                pausedState,
-                notificationHelper.buildNotification(pausedState, notificationPostedAtMillis)
-            )
         }
     }
 
-    /** Resumes sampling once the screen is on and the device is unlocked. */
-    private fun resumeIfInUse() {
-        if (!isDeviceInUse()) return
+    /**
+     * Resumes sampling and moves the Foreground Service back onto the live notification.
+     *
+     * @param unlocked true when the caller already knows the device was unlocked
+     * (ACTION_USER_PRESENT or the keyguard poll), so the keyguard state is not re-checked; it can
+     * still report "locked" while the unlock animation runs. Must be called on the main thread.
+     */
+    private fun resumeIfInUse(unlocked: Boolean = false) {
+        if (!powerManager.isInteractive) return
+        if (!unlocked && keyguardManager.isKeyguardLocked) return
+        keyguardWatchJob?.cancel()
+        keyguardWatchJob = null
         if (!isPausedForLock && repository.isMonitoring.value) return
         Log.d(TAG, "Device unlocked: resuming monitoring")
+
+        val initialState = createRenderState(
+            speed = NetSpeedData(0, 0),
+            isLiveUpdate = false,
+            isLowTraffic = repository.notificationThreshold.value > 0L
+        )
+        val initialNotification =
+            notificationHelper.buildNotification(initialState, notificationPostedAtMillis)
         synchronized(notificationLock) {
             isPausedForLock = false
-            // Force the next sample to repost, restoring the Live Update chip if enabled.
-            lastPostedRenderState = null
+            try {
+                startForegroundCompat(NotificationHelper.NOTIFICATION_ID, initialNotification)
+                notificationManager.cancel(NotificationHelper.PAUSED_NOTIFICATION_ID)
+                lastPostedRenderState = initialState
+                lastNotificationPostElapsedMs = SystemClock.elapsedRealtime()
+            } catch (e: Exception) {
+                Log.w(TAG, "resumeIfInUse: could not switch the foreground notification", e)
+                // Force the first sample to post the live notification.
+                lastPostedRenderState = null
+            }
         }
         startMonitoring()
+    }
+
+    /**
+     * Polls the keyguard while the screen is on and locked, and resumes as soon as it unlocks.
+     * Stops when the screen turns off or monitoring resumes.
+     */
+    private fun startKeyguardWatch() {
+        keyguardWatchJob?.cancel()
+        keyguardWatchJob = scope.launch(Dispatchers.Main) {
+            while (isActive && powerManager.isInteractive) {
+                delay(KEYGUARD_POLL_INTERVAL_MS)
+                if (!keyguardManager.isKeyguardLocked) {
+                    resumeIfInUse(unlocked = true)
+                    break
+                }
+            }
+        }
     }
 
     private val screenReceiver = object : BroadcastReceiver() {
@@ -361,15 +418,27 @@ class NetworkMonitorService : Service() {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.d(TAG, "Screen OFF: pausing monitoring")
+                    keyguardWatchJob?.cancel()
+                    keyguardWatchJob = null
                     pauseForLock()
                 }
 
-                Intent.ACTION_SCREEN_ON, Intent.ACTION_USER_PRESENT -> {
+                Intent.ACTION_SCREEN_ON -> {
                     // Settings may have changed while the screen was off.
                     isOverlayPermissionChecked = false
                     SamsungCompat.invalidateLiveNotificationsForAllAppsCache()
-                    // On a locked lock screen this is a no-op; ACTION_USER_PRESENT follows unlock.
-                    resumeIfInUse()
+                    if (keyguardManager.isKeyguardLocked) {
+                        // Lock screen: stay paused; resume on ACTION_USER_PRESENT or the poll.
+                        startKeyguardWatch()
+                    } else {
+                        resumeIfInUse()
+                    }
+                }
+
+                Intent.ACTION_USER_PRESENT -> {
+                    isOverlayPermissionChecked = false
+                    SamsungCompat.invalidateLiveNotificationsForAllAppsCache()
+                    resumeIfInUse(unlocked = true)
                 }
             }
         }
@@ -378,11 +447,14 @@ class NetworkMonitorService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(screenReceiver)
+        keyguardWatchJob?.cancel()
         serviceJob?.cancel()
         notificationPostedAtMillis = 0L
         lastPostedRenderState = null
         overlayWindow.hide()
         repository.stopMonitoring()
         stopForeground(STOP_FOREGROUND_REMOVE)
+        notificationManager.cancel(NotificationHelper.NOTIFICATION_ID)
+        notificationManager.cancel(NotificationHelper.PAUSED_NOTIFICATION_ID)
     }
 }

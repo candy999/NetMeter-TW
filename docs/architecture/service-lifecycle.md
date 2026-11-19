@@ -47,11 +47,12 @@ The Overlay update runs independently of notification permission. When `POST_NOT
 
 Nothing is sampled or updated while nobody can use the speed display, and the monitor never occupies the lock screen (Live Update chip or Samsung Now Bar), where more important information may need the space.
 
-- `ACTION_SCREEN_OFF` pauses immediately (`pauseForLock()`): the collector job is cancelled, Repository sampling stops, and the notification is replaced with `NotificationHelper.createPausedRenderState()`. That state uses the static `ic_speed` icon, the "paused while locked" text, never requests promotion, and carries no Samsung extras, so the chip and Now Bar entry disappear.
-- `ACTION_SCREEN_ON` resumes only when the keyguard is not locked (`PowerManager.isInteractive && !KeyguardManager.isKeyguardLocked`). On a locked lock screen the Service stays paused.
-- `ACTION_USER_PRESENT` (the user unlocked) resumes sampling. Resuming resets the speed baseline and the notification low-traffic hysteresis, and forces a repost so the Live Update chip returns when enabled.
+- `ACTION_SCREEN_OFF` pauses immediately (`pauseForLock()`): the collector job is cancelled and Repository sampling stops. The Foreground Service then switches to a separate static notification (`PAUSED_NOTIFICATION_ID`, `NotificationHelper.createPausedRenderState()`: `ic_speed`, "paused while locked", never promoted, no Samsung extras) and the live notification (`NOTIFICATION_ID`) is cancelled. Cancelling instead of updating in place is deliberate: One UI can keep a Now Bar card for an existing notification even after it stops requesting promotion. Calling `startForeground()` again on an already-foreground Service is allowed from the background.
+- `ACTION_SCREEN_ON` resumes only when the keyguard is not locked. On a locked lock screen the Service stays paused and polls `KeyguardManager.isKeyguardLocked` every second (`KEYGUARD_POLL_INTERVAL_MS`) as a fallback, until the screen turns off or the device unlocks.
+- `ACTION_USER_PRESENT` (the user unlocked) resumes without re-checking the keyguard, because the keyguard can still report "locked" while the unlock animation runs.
+- Resuming (`resumeIfInUse()`) moves the Foreground Service back to `NOTIFICATION_ID`, cancels the paused notification, resets the speed baseline and the low-traffic hysteresis, and lets the first sample restore the Live Update chip when enabled.
 - `onStartCommand()` starts sampling only when the device is in use; a `START_STICKY` restart or a boot start before the first unlock starts paused.
-- A lock (`notificationLock`) guards the paused flag together with posting, so a sample that was in flight when the screen turned off cannot re-promote the notification.
+- A lock (`notificationLock`) guards the paused flag together with posting, so a sample that was in flight when the screen turned off cannot re-post the live notification.
 - The Service and its Foreground Service notification stay alive throughout.
 
 ## 6. Boot Startup
