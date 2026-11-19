@@ -13,7 +13,7 @@
 - 全新名稱 NetMeter TW、全新圖示，預設主題色改為深藍色 #0E4686。
 
 ### 省電與效能
-- 關閉螢幕 10 秒後停止取樣（原本為 2 分鐘）；在螢幕關閉時啟動服務也會停止取樣。
+- 關閉螢幕或停留在鎖定畫面時立即暫停取樣（原本關閉螢幕 2 分鐘後才停止），而且不佔用鎖定畫面的膠囊和 Now Bar；解鎖後自動恢復。
 - 只有在內容改變時才更新通知，閒置時不再每秒重新整理。
 - 浮動視窗隱藏或關閉時不再重繪。
 
@@ -43,7 +43,7 @@ A Taiwan fork based on [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelMet
 - New name NetMeter TW, a new icon, and dark blue #0E4686 as the default theme color.
 
 ### Battery and performance
-- Sampling stops 10 seconds after the screen turns off (was 2 minutes), including when the service starts with the screen off.
+- Sampling pauses as soon as the screen turns off and stays paused on the lock screen (was: stop 2 minutes after screen off), without occupying the lock screen chip or Now Bar. It resumes after unlock.
 - The notification is reposted only when its content changes.
 - The Overlay no longer redraws while hidden or disabled.
 

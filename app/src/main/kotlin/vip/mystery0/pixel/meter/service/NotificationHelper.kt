@@ -154,6 +154,25 @@ class NotificationHelper(private val context: Context) {
     }
 
     /**
+     * State shown while sampling is paused because the screen is off or the device is locked.
+     *
+     * It never requests Live Update promotion and carries no Samsung extras, so the monitor does
+     * not occupy the status bar chip or the One UI Now Bar on the lock screen, where more
+     * important information may need the space.
+     */
+    fun createPausedRenderState(
+        useQuietChannel: Boolean,
+        useCustomColor: Boolean,
+        color: Int
+    ): NotificationRenderState = NotificationRenderState(
+        mode = "paused-static",
+        contentText = context.getString(R.string.notification_content_text_paused),
+        useCustomColor = useCustomColor,
+        color = if (useCustomColor) color else 0,
+        quietChannel = useQuietChannel
+    )
+
+    /**
      * Computes the visible state without building a [Notification]. This is cheap enough to run
      * for every sample.
      *

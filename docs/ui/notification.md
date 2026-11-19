@@ -54,6 +54,8 @@ Android 16+ can enable Live Update:
 
 Android decides whether the notification is ultimately promoted.
 
+While the screen is off or the device is locked, the Service posts a static paused state that never requests promotion, so the chip and the Samsung Now Bar entry are not shown on the lock screen. Promotion returns after unlock. See `docs/architecture/service-lifecycle.md` §5.
+
 On Android 16+, Settings shows whether `NotificationManager.canPostPromotedNotifications()` allows Live Updates for the app and opens `Settings.ACTION_APP_NOTIFICATION_PROMOTION_SETTINGS` (falling back to the app notification settings) so users can re-enable it.
 
 ### Samsung One UI

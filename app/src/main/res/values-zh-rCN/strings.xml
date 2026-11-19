@@ -172,6 +172,7 @@
     <string name="notification_content_title">网速显示</string>
     <string name="notification_content_text">正在运行…</string>
     <string name="notification_content_text_monitoring">监听中…</string>
+    <string name="notification_content_text_paused">设备锁定时暂停监控</string>
     <string name="tile_overlay_label">悬浮窗</string>
     <string name="tile_notification_label">通知栏显示</string>
     <string name="tile_desc_active">已开启</string>

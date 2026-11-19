@@ -22,7 +22,7 @@ NetMeter TW is a fork of [Pixel Meter](https://github.com/Pixel-Tailor-CN/PixelM
 
 - A full **Traditional Chinese (Taiwan)** interface written with Taiwan terminology, not converted from Simplified Chinese.
 - **Samsung One UI support** for the Now Bar and status bar chip, plus Samsung-specific setup guidance.
-- **Battery and accuracy improvements**, such as faster screen-off sleep, fewer notification refreshes, and no speed spikes when switching between Wi-Fi and cellular.
+- **Battery and accuracy improvements**, such as pausing while the screen is off or locked (without occupying the lock screen Now Bar), fewer notification refreshes, and no speed spikes when switching between Wi-Fi and cellular.
 - A separate application ID (`io.github.candy999.netmeter`), so it installs **alongside the original app**.
 
 ## Why it is accurate
@@ -86,7 +86,7 @@ Other notes:
 ## Battery behavior
 
 - Sampling runs at the interval you choose (1–3 seconds), using no wakelocks or alarms.
-- Sampling stops 10 seconds after the screen turns off and resumes when it turns on.
+- Sampling pauses as soon as the screen turns off and stays paused on the lock screen, where the monitor does not occupy the chip or the Now Bar. It resumes after unlock.
 - The notification is reposted only when the status bar output changes. Text that appears only in the notification drawer refreshes at most every 10 seconds.
 
 ## Building

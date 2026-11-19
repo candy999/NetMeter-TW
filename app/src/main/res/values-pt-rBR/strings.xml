@@ -157,6 +157,7 @@
     <string name="notification_content_title">Monitor de Velocidade da Rede</string>
     <string name="notification_content_text">Monitorando em segundo plano…</string>
     <string name="notification_content_text_monitoring">Monitorando…</string>
+    <string name="notification_content_text_paused">Pausado enquanto o dispositivo está bloqueado</string>
     <string name="tile_overlay_label">Sobreposição</string>
     <string name="tile_notification_label">Notificação</string>
     <string name="tile_desc_active">Ativo</string>

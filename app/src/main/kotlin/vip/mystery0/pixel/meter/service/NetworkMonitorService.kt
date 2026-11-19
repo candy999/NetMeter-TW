@@ -1,6 +1,7 @@
 package vip.mystery0.pixel.meter.service
 
 import android.Manifest
+import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -19,21 +20,16 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import vip.mystery0.pixel.meter.data.repository.NetworkRepository
 import vip.mystery0.pixel.meter.data.source.NetSpeedData
 import vip.mystery0.pixel.meter.ui.overlay.OverlayWindow
-import kotlin.time.Duration.Companion.milliseconds
 
 class NetworkMonitorService : Service() {
     companion object {
         private const val TAG = "NetworkMonitorService"
-
-        /** Sampling stops this long after the screen turns off. */
-        private const val SCREEN_OFF_STOP_DELAY_MS = 10_000L
 
         /**
          * When only the notification drawer text changed, the notification is reposted at most
@@ -50,6 +46,9 @@ class NetworkMonitorService : Service() {
     private val notificationManager: NotificationManager by inject()
     private val overlayWindow: OverlayWindow by inject()
     private val powerManager: PowerManager by inject()
+    private val keyguardManager: KeyguardManager by lazy {
+        getSystemService(KeyguardManager::class.java)
+    }
 
     private var serviceJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -61,6 +60,15 @@ class NetworkMonitorService : Service() {
 
     @Volatile
     private var lastNotificationPostElapsedMs = 0L
+
+    /**
+     * True while sampling is paused because the screen is off or the device is locked. Guarded by
+     * [notificationLock] together with posting, so a late sample cannot re-promote the
+     * notification after the paused state was posted.
+     */
+    @Volatile
+    private var isPausedForLock = false
+    private val notificationLock = Any()
 
     // Cached Settings.canDrawOverlays() result. Only touched on the main thread.
     private var isOverlayPermissionGranted = false
@@ -75,6 +83,7 @@ class NetworkMonitorService : Service() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_USER_PRESENT)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(screenReceiver, filter, RECEIVER_NOT_EXPORTED)
@@ -120,12 +129,14 @@ class NetworkMonitorService : Service() {
         lastPostedRenderState = initialState
         lastNotificationPostElapsedMs = SystemClock.elapsedRealtime()
 
-        startMonitoring()
-        if (!powerManager.isInteractive) {
-            // A START_STICKY restart or boot start can happen with the screen off, in which case
-            // no ACTION_SCREEN_OFF broadcast will follow.
-            Log.d(TAG, "Started while screen is off: scheduling sleep")
-            scheduleScreenOffStop()
+        if (isDeviceInUse()) {
+            isPausedForLock = false
+            startMonitoring()
+        } else {
+            // A START_STICKY restart or boot start can happen while the screen is off or locked,
+            // in which case no ACTION_SCREEN_OFF broadcast will follow.
+            Log.d(TAG, "Started while the device is locked: staying paused until unlock")
+            pauseForLock()
         }
         return START_STICKY
     }
@@ -259,6 +270,17 @@ class NetworkMonitorService : Service() {
         // Only build the Notification (Builder, Bitmap drawing) when it is actually posted.
         val notification =
             notificationHelper.buildNotification(renderState, notificationPostedAtMillis)
+        synchronized(notificationLock) {
+            // The device may have been locked while this sample was being processed.
+            if (isPausedForLock) return
+            postNotification(renderState, notification)
+        }
+    }
+
+    private fun postNotification(
+        renderState: NotificationHelper.NotificationRenderState,
+        notification: android.app.Notification
+    ) {
         try {
             notificationManager.notify(NotificationHelper.NOTIFICATION_ID, notification)
             lastPostedRenderState = renderState
@@ -282,49 +304,81 @@ class NetworkMonitorService : Service() {
         return elapsed >= CONTENT_TEXT_REPOST_INTERVAL_MS
     }
 
-    private fun scheduleScreenOffStop() {
-        stopMonitoringJob?.cancel()
-        stopMonitoringJob = scope.launch {
-            delay(SCREEN_OFF_STOP_DELAY_MS.milliseconds)
-            if (powerManager.isInteractive) {
-                // The screen turned back on without cancelling this timer; keep sampling.
-                return@launch
+    /** True when the screen is on and the keyguard is dismissed. */
+    private fun isDeviceInUse(): Boolean =
+        powerManager.isInteractive && !keyguardManager.isKeyguardLocked
+
+    /**
+     * Stops sampling and replaces the notification with a static, non-promoted one, so nothing is
+     * updated while nobody can see it and the monitor does not occupy the lock screen Now Bar.
+     * Monitoring resumes on unlock (see [resumeIfInUse]).
+     */
+    private fun pauseForLock() {
+        serviceJob?.cancel()
+        serviceJob = null
+        repository.stopMonitoring()
+
+        val pausedState = notificationHelper.createPausedRenderState(
+            useQuietChannel = repository.isNotificationQuiet.value,
+            useCustomColor = repository.notificationUseCustomColor.value,
+            color = repository.notificationColor.value
+        )
+        synchronized(notificationLock) {
+            isPausedForLock = true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // The system keeps showing the Foreground Service notification it already has.
+                lastPostedRenderState = null
+                return
             }
-            Log.d(TAG, "Screen OFF Timeout: Stopping monitoring to save power")
-            repository.stopMonitoring()
+            if (pausedState == lastPostedRenderState) return
+            postNotification(
+                pausedState,
+                notificationHelper.buildNotification(pausedState, notificationPostedAtMillis)
+            )
         }
+    }
+
+    /** Resumes sampling once the screen is on and the device is unlocked. */
+    private fun resumeIfInUse() {
+        if (!isDeviceInUse()) return
+        if (!isPausedForLock && repository.isMonitoring.value) return
+        Log.d(TAG, "Device unlocked: resuming monitoring")
+        synchronized(notificationLock) {
+            isPausedForLock = false
+            // Force the next sample to repost, restoring the Live Update chip if enabled.
+            lastPostedRenderState = null
+        }
+        startMonitoring()
     }
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
-                    Log.d(TAG, "Screen OFF: Scheduling sleep")
-                    scheduleScreenOffStop()
+                    Log.d(TAG, "Screen OFF: pausing monitoring")
+                    pauseForLock()
                 }
 
-                Intent.ACTION_SCREEN_ON -> {
-                    Log.d(TAG, "Screen ON: Cancelling sleep timer")
-                    stopMonitoringJob?.cancel()
-                    // The permission may have changed while the screen was off.
+                Intent.ACTION_SCREEN_ON, Intent.ACTION_USER_PRESENT -> {
+                    // Settings may have changed while the screen was off.
                     isOverlayPermissionChecked = false
                     SamsungCompat.invalidateLiveNotificationsForAllAppsCache()
-                    if (!repository.isMonitoring.value) {
-                        Log.d(TAG, "Screen ON: Resuming monitoring")
-                        startMonitoring()
-                    }
+                    // On a locked lock screen this is a no-op; ACTION_USER_PRESENT follows unlock.
+                    resumeIfInUse()
                 }
             }
         }
     }
 
-    private var stopMonitoringJob: Job? = null
-
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(screenReceiver)
         serviceJob?.cancel()
-        stopMonitoringJob?.cancel()
         notificationPostedAtMillis = 0L
         lastPostedRenderState = null
         overlayWindow.hide()

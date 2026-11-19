@@ -172,6 +172,7 @@
     <string name="notification_content_title">Мониторинг скорости сети</string>
     <string name="notification_content_text">Мониторинг в фоновом режиме…</string>
     <string name="notification_content_text_monitoring">Мониторинг…</string>
+    <string name="notification_content_text_paused">Приостановлено, пока устройство заблокировано</string>
     <string name="tile_overlay_label">Плавающее окно</string>
     <string name="tile_notification_label">Уведомление</string>
     <string name="tile_desc_active">Активно</string>

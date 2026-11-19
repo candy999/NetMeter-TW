@@ -172,6 +172,7 @@
     <string name="notification_content_title">網速監測</string>
     <string name="notification_content_text">正在背景監測…</string>
     <string name="notification_content_text_monitoring">監測中…</string>
+    <string name="notification_content_text_paused">裝置鎖定時暫停監測</string>
     <string name="tile_overlay_label">浮動視窗</string>
     <string name="tile_notification_label">通知</string>
     <string name="tile_desc_active">已啟用</string>

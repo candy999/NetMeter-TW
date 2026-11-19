@@ -16,7 +16,7 @@ NetMeter TW 是 Pixel Tailor CN 开发的 [Pixel Meter](https://github.com/Pixel
 
 - **繁体中文（台湾）界面**，按台湾用语翻译，不是简转繁。
 - **三星 One UI 支持**：可在 Now Bar 和状态栏胶囊显示网速，并提供三星专属的设置引导。
-- **省电与准确度改进**：熄屏后更快停止采样、减少通知刷新、切换 Wi-Fi 与移动网络时不再出现网速尖峰。
+- **省电与准确度改进**：熄屏或锁屏时立即暂停采样且不占用锁屏 Now Bar、减少通知刷新、切换 Wi-Fi 与移动网络时不再出现网速尖峰。
 - **独立的应用 ID**（`io.github.candy999.netmeter`），可以**与原版同时安装**。
 
 如果你需要原版（含 Google Play 版本），请前往 [Pixel Meter 原项目](https://github.com/Pixel-Tailor-CN/PixelMeter)。

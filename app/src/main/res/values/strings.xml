@@ -180,6 +180,7 @@
     <string name="notification_content_title">Network Speed Monitor</string>
     <string name="notification_content_text">Monitoring in background…</string>
     <string name="notification_content_text_monitoring">Monitoring…</string>
+    <string name="notification_content_text_paused">Paused while the device is locked</string>
 
     <string name="tile_overlay_label">Overlay</string>
     <string name="tile_notification_label">Notification</string>

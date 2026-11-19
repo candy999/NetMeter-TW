@@ -43,14 +43,16 @@ It supports a basic static notification, a dynamic Bitmap small icon, and Androi
 
 The Overlay update runs independently of notification permission. When `POST_NOTIFICATIONS` is denied, optional `notify()` updates are skipped and the last posted render state is invalidated so a later grant refreshes even unchanged content. A permission race while posting is caught without cancelling monitoring. Enabling notification speed without permission must not stop a working Overlay.
 
-## 5. Screen-Off Policy
+## 5. Screen-Off and Lock Screen Policy
 
-- `ACTION_SCREEN_OFF` starts a 10-second timer (`SCREEN_OFF_STOP_DELAY_MS`).
-- If the screen remains off when the timer expires, Repository sampling stops while the Service and its Foreground Service notification stay alive. The timer re-checks `PowerManager.isInteractive` before stopping.
-- `onStartCommand()` schedules the same timer when the Service starts while `PowerManager.isInteractive` is false, for example a `START_STICKY` restart or a boot start with the screen off. No `ACTION_SCREEN_OFF` broadcast follows in that case, so sampling would otherwise continue indefinitely.
-- `ACTION_SCREEN_ON` cancels the timer and resumes sampling if it was paused. Resuming resets the speed baseline and the notification low-traffic hysteresis.
+Nothing is sampled or updated while nobody can use the speed display, and the monitor never occupies the lock screen (Live Update chip or Samsung Now Bar), where more important information may need the space.
 
-This reduces continuous computation while the screen is off and restores speed display when the screen turns on.
+- `ACTION_SCREEN_OFF` pauses immediately (`pauseForLock()`): the collector job is cancelled, Repository sampling stops, and the notification is replaced with `NotificationHelper.createPausedRenderState()`. That state uses the static `ic_speed` icon, the "paused while locked" text, never requests promotion, and carries no Samsung extras, so the chip and Now Bar entry disappear.
+- `ACTION_SCREEN_ON` resumes only when the keyguard is not locked (`PowerManager.isInteractive && !KeyguardManager.isKeyguardLocked`). On a locked lock screen the Service stays paused.
+- `ACTION_USER_PRESENT` (the user unlocked) resumes sampling. Resuming resets the speed baseline and the notification low-traffic hysteresis, and forces a repost so the Live Update chip returns when enabled.
+- `onStartCommand()` starts sampling only when the device is in use; a `START_STICKY` restart or a boot start before the first unlock starts paused.
+- A lock (`notificationLock`) guards the paused flag together with posting, so a sample that was in flight when the screen turned off cannot re-promote the notification.
+- The Service and its Foreground Service notification stay alive throughout.
 
 ## 6. Boot Startup
 
